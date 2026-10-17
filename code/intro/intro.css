@@ -1,0 +1,264 @@
+/* ============================================================================
+   صفحه‌ی معرفی «چالش γ» · استایل
+   ----------------------------------------------------------------------------
+   توکن‌ها همان پالت روشن و تاریک بازی هستند (code/style.css). این فایل بعد از موتور
+   scrollcraft بارگذاری می‌شود تا توکن‌های آن را بازنویسی کند. حالت تاریک با
+   data-theme="dark" روی <html> فعال می‌شود (js/theme.js).
+   ============================================================================ */
+
+@font-face {
+  font-family: "B Nazanin";
+  src: local("B Nazanin"), local("BNazanin"), url("../fonts/BNazanin.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  /* پالت روشن: همان نام‌ها و مقادیر بازی */
+  --paper: #FFF6E5;
+  --sheet: #FFFBF3;
+  --ink: #1F2A25;
+  --ink-soft: #3B4A43;
+  --brand: #174C3C;
+  --gold: #D9AA45;
+  --grid: #E3D5B3;
+  --mark: #174C3C;
+  --on-mark: #1F2A25;
+  --cover: #2E7D5B;
+  --hint: #1F6A78;
+  --amber: #8A5F12;
+  --bad: #A23B32;
+  --ok: #2E7D5B;
+  --bead-0: #D9A441; --bead-1: #7FA886; --bead-2: #5FA7A0; --bead-3: #D4825E; --bead-4: #C9708A;
+  --bead-5: #9B88C7; --bead-6: #6F9BC4; --bead-7: #B8A24E; --bead-8: #8DB35E; --bead-9: #B07AA8;
+  --hatch-0: #815D1A; --hatch-1: #426147; --hatch-2: #335D59; --hatch-3: #854123; --hatch-4: #7D2F46;
+  --hatch-5: #4F3B7D; --hatch-6: #315678; --hatch-7: #675A29; --hatch-8: #4E6630; --hatch-9: #673D61;
+
+  /* موتور scrollcraft از همین متغیرها استفاده می‌کند */
+  --sc-canvas: var(--paper);
+  --sc-surface: var(--sheet);
+  --sc-ink: var(--ink);
+  --sc-ink-soft: var(--ink-soft);
+  --sc-accent: var(--mark);
+  --sc-accent-ink: var(--paper);
+  --sc-font-display: "B Nazanin", Vazirmatn, Tahoma, sans-serif;
+  --sc-font-text: "B Nazanin", Vazirmatn, Tahoma, sans-serif;
+  --sc-font-mono: "B Nazanin", Vazirmatn, Tahoma, sans-serif; /* بدون تک‌فاصله */
+  /* فارسی نباید tracking بگیرد */
+  --sc-track-tight: 0;
+  --sc-track-snug: 0;
+  --sc-track-normal: 0;
+  --sc-track-wide: 0;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 28px;
+  --space-4: 56px;
+  --pad-x: clamp(20px, 5vw, 72px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--paper); color-scheme: light; }
+
+/* ---------- پالت تاریک (همان منطق پالت روشن؛ مهره‌ها و هاشورها هم‌رنگ بازی) ---------- */
+:root[data-theme="dark"] {
+  --paper: #13211B;
+  --sheet: #1A2B24;
+  --ink: #EDE6D3;
+  --ink-soft: #C3CCC0;
+  --brand: #8ED1B5;
+  --gold: #D9AA45;
+  --grid: #2C4238;
+  --mark: #8ED1B5;
+  --on-mark: #13211B;
+  --cover: #6CC79E;
+  --hint: #7FCAD6;
+  --amber: #E8C170;
+  --bad: #F08A80;
+  --ok: #6CC79E;
+  --hatch-0: #E6C484; --hatch-1: #ACC6B0; --hatch-2: #97C6C1; --hatch-3: #E3AE96; --hatch-4: #DCA2B3;
+  --hatch-5: #BEB2DB; --hatch-6: #A1BED9; --hatch-7: #D1C38C; --hatch-8: #B5CE96; --hatch-9: #CCA9C6;
+  --sc-canvas: var(--paper);
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sc-font-text);
+  font-size: 19px;
+  line-height: 2;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--hint); border-radius: 4px; }
+
+/* γ و نمادهای ریاضی در فونت فارسی نیستند؛ قلم ریاضی جداگانه‌ای می‌گیرند */
+.gamma, .math {
+  font-family: "Cambria Math", "Cambria", "STIX Two Math", "Times New Roman", serif;
+  font-style: normal;
+}
+.gamma { font-style: italic; }
+
+/* ---------- سربرگ ---------- */
+.bar {
+  position: fixed; inset: 0 0 auto 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-2) var(--pad-x);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  border-bottom: 1px solid var(--grid);
+  backdrop-filter: blur(6px);
+}
+.bar__brand { font-size: 20px; text-decoration: none; }
+.bar__tools { display: flex; align-items: center; gap: var(--space-1); }
+/* ---------- دکمه ---------- */
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;   /* دکمه‌ی کپسولی: گرد و مینیمال */
+  background: var(--ink);
+  color: var(--paper);
+  font: inherit;
+  font-size: 19px;
+  text-decoration: none;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.btn:hover { background: var(--brand); border-color: var(--brand); }
+.btn--small { padding: 6px 16px; font-size: 17px; line-height: 1.8; }
+.btn--large { padding: 16px 40px; font-size: 21px; }
+
+/* ---------- تایپ ---------- */
+.display {
+  font-family: var(--sc-font-display);
+  font-weight: 700;
+  font-size: clamp(34px, 4.6vw, 58px);
+  line-height: 1.5;
+  margin: 0 0 var(--space-2);
+  color: var(--ink);
+}
+.display--lg { font-size: clamp(30px, 3.6vw, 46px); }
+.display--md { font-size: clamp(24px, 2.6vw, 30px); margin-top: var(--space-4); }
+.lede { max-width: 36em; margin: 0 0 var(--space-2); color: var(--ink); }
+.lede strong, .note strong { color: var(--brand); font-weight: 700; }
+.note { max-width: 40em; color: var(--ink-soft); }
+
+/* ---------- هیرو ---------- */
+.hero { min-height: 100svh; display: flex; align-items: center; padding: 120px var(--pad-x) 80px; }
+.hero__grid {
+  width: 100%; max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); align-items: center;
+}
+.hero__text .btn { margin-top: var(--space-2); }
+/* ---------- گراف (SVG) ---------- */
+.figure { margin: 0; }
+.figure svg { display: block; width: 100%; height: auto; }
+.figure figcaption { margin-top: var(--space-1); color: var(--ink-soft); font-size: 18px; text-align: center; }
+.figure--live { width: min(640px, 100%); }
+
+.graph .edge { stroke: var(--ink-soft); stroke-width: 2.4; stroke-linecap: round; }
+.graph .v-bg {
+  fill: var(--sheet);
+  stroke: var(--ink-soft);
+  stroke-width: 2;
+  transition: fill 0.45s var(--ease), stroke 0.45s var(--ease), stroke-width 0.45s var(--ease);
+}
+.graph .v-label {
+  fill: var(--ink); font-family: var(--sc-font-text); font-size: 22px; text-anchor: middle; dominant-baseline: central;
+  paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round;
+}
+.graph .v.is-marked .v-bg { fill: var(--mark); stroke: var(--mark); }
+.graph .v.is-marked .v-label { fill: var(--on-mark); }
+.graph .v.is-covered .v-bg { stroke: var(--cover); }
+.graph .v.is-missing .v-bg { stroke: var(--bad); stroke-width: 3; stroke-dasharray: 6 5; }
+/* نقطه‌ی اوج: وقتی پوشش کامل است، حاشیه‌ی رأس‌های پوشش‌داده ضخیم‌تر می‌شود */
+.act.is-complete .graph .v.is-covered .v-bg { stroke-width: 3; }
+
+/* ---------- پین: گراف زنده و کپشن‌ها ---------- */
+.act { position: relative; }
+.act--pin .stage {
+  min-height: 100svh;
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-4);
+  align-items: center; padding: 96px var(--pad-x);
+  max-width: 1280px; margin: 0 auto;
+}
+.captions { display: grid; }
+.cap {
+  grid-area: 1 / 1;
+  margin: 0;
+  max-width: 30em;
+  font-size: 22px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+}
+.cap.is-active { opacity: 1; transform: none; }
+
+/* ---------- پن: پانل‌های افقی ---------- */
+/* direction: ltr روی بوم، تا ریل از لبه‌ی چپ شروع شود و پانل‌های ابتدایی بیرون نیفتند (متن پانل‌ها rtl می‌ماند) */
+.act--pan .stage { min-height: 100svh; display: flex; direction: ltr; align-items: center; padding: 0; overflow: hidden; }
+.rail {
+  display: flex; direction: ltr; gap: 48px;
+  padding-inline: var(--pad-x); align-items: center;
+  will-change: transform;
+}
+.panel {
+  direction: rtl;
+  flex: 0 0 min(560px, 78vw);
+  padding: var(--space-3);
+  background: var(--sheet);
+  border: 1px solid var(--grid);
+  border-radius: 10px;
+  margin: 0;
+}
+.panel .figure svg { max-height: 300px; }
+.panel__title { font-size: 28px; margin: 0 0 var(--space-2); font-family: var(--sc-font-display); }
+.panel__text { margin: 0 0 var(--space-2); font-size: 19px; }
+.panel--proof { background: transparent; }
+
+/* ---------- فلو: قضیه ---------- */
+.flow { padding: 120px var(--pad-x); }
+.flow__wrap { max-width: 920px; margin: 0 auto; }
+.table-wrap { overflow-x: auto; margin: var(--space-3) 0; }
+table.data { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 19px; }
+table.data th, table.data td {
+  padding: 10px 12px; text-align: center;
+  border-bottom: 1px solid var(--grid);
+  font-weight: 400;
+}
+table.data thead th { color: var(--ink-soft); }
+table.data tbody th { text-align: start; color: var(--ink); }
+table.data td { color: var(--ink); }
+.facts { padding-inline-start: 1.4em; margin: 0; }
+.facts li { margin: 0 0 var(--space-1); }
+
+/* ---------- بستن: پین با CTA ---------- */
+.act--close .stage { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; max-width: 920px; margin: 0 auto; padding: 96px var(--pad-x) 40px; }
+.close__inner { max-width: 36em; }
+.close__inner .btn { margin-top: var(--space-2); }
+.foot { margin-top: auto; padding-top: var(--space-4); color: var(--ink-soft); font-size: 16px; }
+
+/* ---------- واکنش‌گرایی ---------- */
+@media (max-width: 860px) {
+  body { font-size: 18px; }
+  .hero { min-height: auto; padding-top: 110px; }
+  .hero__grid { grid-template-columns: 1fr; gap: var(--space-3); }
+  .act--pin .stage {
+    min-height: 100svh; grid-template-columns: 1fr; align-content: start;
+    gap: var(--space-2); padding-top: 90px; padding-bottom: 32px;
+  }
+  .figure--live { width: 100%; }
+  .figure--live svg { max-height: 40svh; }
+  .captions { min-height: 9em; }
+  .cap { font-size: 18px; }
+  .panel { flex-basis: 84vw; padding: var(--space-2); }
+  .flow { padding: 96px var(--pad-x); }
+}
+
+/* ---------- کاهش حرکت: بدون ترجمه، فقط تغییر آنی ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .cap { transform: none; }
+}

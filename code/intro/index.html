@@ -1,0 +1,246 @@
+<!doctype html>
+<!--
+  صفحه‌ی معرفی «چالش γ» (نسخه ۶.۳.۰)
+
+  گرامر: فصل‌بندی ویراستاری. چهار بخش با دستگاه‌های پین، پن و فلو.
+  موتور حرکت: vendor/scrollcraft.js (MIT، Nate Herk). این صفحه کد موتور را تغییر نمی‌دهد.
+  گراف‌ها: intro.js (SVG، بدون کتابخانه‌ی خارجی). توکن‌ها: intro.css.
+  محتوا: فقط ریاضی. هیچ داستان‌گویی یا گیمیفیکیشن بی‌پایه‌ی ریاضی.
+-->
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مجموعه‌ی احاطه‌گر و عدد احاطه‌گری · چالش γ</title>
+<meta name="description" content="تعریف مجموعه‌ی احاطه‌گر و عدد احاطه‌گری γ(G)، با مثال، کران پایین و قضیه‌ی γ(P_n) = γ(C_n) = ⌈n/3⌉.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23174C3C'/><circle cx='16' cy='16' r='6' fill='%23E9B25A'/></svg>">
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="vendor/scrollcraft.css">
+<link rel="stylesheet" href="../css/triggers.css">
+<link rel="stylesheet" href="intro.css">
+</head>
+<body>
+
+<header class="bar">
+  <a class="bar__brand" href="../index.html">چالش <span class="gamma"><span class="math" dir="ltr">γ</span></span></a>
+  <div class="bar__tools">
+    <label class="trigger trigger--theme" title="حالت تاریک یا روشن">
+      <input type="checkbox" id="theme-toggle" role="switch" aria-checked="false" aria-label="حالت تاریک">
+      <span class="trigger__track" aria-hidden="true">
+        <span class="trigger__stars"><i></i><i></i><i></i></span>
+        <span class="trigger__knob">
+          <span class="ico ico--sun"></span>
+          <span class="ico ico--moon"></span>
+        </span>
+      </span>
+      <span class="trigger__text">حالت تاریک</span>
+    </label>
+    <a class="btn btn--small" href="../index.html">شروع بازی</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ۱. شناخت: تعریف، با گراف ثابت -->
+  <section class="hero">
+    <div class="hero__grid">
+      <div class="hero__text">
+        <h1 class="display">مجموعه‌ی احاطه‌گر و عدد احاطه‌گری</h1>
+        <p class="lede">
+          فرض کنید <span class="math" dir="ltr">G</span> یک گراف ساده و متناهی باشد. زیرمجموعه‌ی <span class="math" dir="ltr">D</span> از رأس‌های <span class="math" dir="ltr">G</span> را
+          <strong>احاطه‌گر</strong> می‌نامیم، هرگاه برای هر رأس <span class="math" dir="ltr">v</span> داشته باشیم
+          <span class="math" dir="ltr">v</span> <span class="math"><span class="math" dir="ltr">∈</span></span> <span class="math" dir="ltr">D</span> یا <span class="math" dir="ltr">N(v)</span> <span class="math">∩</span> <span class="math" dir="ltr">D</span> <span class="math"><span class="math" dir="ltr">≠</span></span> ∅.
+        </p>
+        <p class="lede">
+          کوچک‌ترین اندازه‌ی یک مجموعه‌ی احاطه‌گر را <strong>عدد احاطه‌گری</strong> گراف می‌نامیم
+          و با <span class="math" dir="ltr">γ(G)</span> نشان می‌دهیم.
+        </p>
+        <a class="btn" href="../index.html">شروع بازی</a>
+      </div>
+      <figure class="figure" data-graph="C6" data-marked="0,3" data-caption-id="fig-hero">
+        <figcaption>گراف <span class="math" dir="ltr">C₆</span> با مجموعه‌ی احاطه‌گر <span class="math" dir="ltr">D = {۱، ۴}</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ۲. نمونه‌ی گام‌به‌گام: پین -->
+  <section class="act act--pin" data-sc-act="pin" data-sc-span="3.2" data-intro="definition"
+           aria-label="پوشش گراف C₆ گام‌به‌گام">
+    <div class="stage" data-sc-stage>
+      <figure class="figure figure--live" data-graph="C6">
+        <figcaption>
+          رأس‌های پوشش‌داده‌شده: <span data-count>۰</span> از ۶
+        </figcaption>
+      </figure>
+      <div class="captions">
+        <p class="cap" data-at="0">
+          بسته‌ی همسایگی رأس <span class="math" dir="ltr">v</span> را <span class="math" dir="ltr">N[v] = N(v)</span> <span class="math"><span class="math" dir="ltr">∪</span></span> <span class="math" dir="ltr">{v}</span> می‌نامیم. رأس <span class="math" dir="ltr">v</span> خودش و همسایه‌هایش را پوشش می‌دهد.
+        </p>
+        <p class="cap" data-at="0.25">
+          رأس ۱ را به <span class="math" dir="ltr">D</span> اضافه می‌کنیم. <span class="math" dir="ltr">N[۱] = {۶، ۱، ۲}</span>، پس این سه رأس پوشش داده می‌شوند.
+        </p>
+        <p class="cap" data-at="0.5">
+          رأس ۴ را هم اضافه می‌کنیم. <span class="math" dir="ltr">N[۴] = {۳، ۴، ۵}</span>. اکنون همه‌ی رأس‌ها پوشش داده شده‌اند.
+        </p>
+        <p class="cap" data-at="0.8">
+          <span class="math" dir="ltr">D = {۱، ۴}</span> یک مجموعه‌ی احاطه‌گر است، پس <span class="math" dir="ltr">γ(C₆)</span> <span class="math"><span class="math" dir="ltr">≤</span></span> ۲. کران پایین را در بخش بعد ثابت می‌کنیم.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ۳. کمینه بودن: پن با سه وضعیت -->
+  <section class="act act--pan" data-sc-act="pan" data-sc-span="3.2" aria-label="کمینه بودن در مسیر P₇">
+    <div class="stage" data-sc-stage>
+      <div class="rail" data-sc-pan="0.5">
+        <article class="panel">
+          <figure class="figure" data-graph="P7" data-marked="1,5" data-missing="1">
+            <figcaption>مسیر <span class="math" dir="ltr">P₇</span> با <span class="math" dir="ltr">D = {۲، ۶}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            رأس‌های پوشش‌داده‌شده: ۶ از ۷. رأس ۴ پوشش داده نشده است، پس <span class="math" dir="ltr">D</span> احاطه‌گر نیست.
+          </p>
+        </article>
+        <article class="panel">
+          <figure class="figure" data-graph="P7" data-marked="1,4,5">
+            <figcaption>مسیر <span class="math" dir="ltr">P₇</span> با <span class="math" dir="ltr">D = {۲، ۵، ۶}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            همه‌ی رأس‌ها پوشش داده شده‌اند، پس <span class="math" dir="ltr">D</span> احاطه‌گر است و <span class="math" dir="ltr">γ(P₇)</span> <span class="math"><span class="math" dir="ltr">≤</span></span> ۳.
+          </p>
+        </article>
+        <article class="panel panel--proof">
+          <h2 class="panel__title">کران پایین</h2>
+          <p class="panel__text">
+            در مسیر <span class="math" dir="ltr">P₇</span> و دور <span class="math" dir="ltr">C₆</span>، بسته‌ی همسایگی هر رأس حداکثر سه رأس دارد.
+            اگر <span class="math" dir="ltr">D</span> احاطه‌گر باشد، اجتماع بسته‌های همسایگی اعضای <span class="math" dir="ltr">D</span> همه‌ی رأس‌ها را می‌پوشاند،
+            پس <span class="math" dir="ltr">n</span> <span class="math"><span class="math" dir="ltr">≤</span></span> <span class="math" dir="ltr">۳|D|</span>.
+          </p>
+          <p class="panel__text">
+            برای <span class="math" dir="ltr">P₇: ۷</span> <span class="math"><span class="math" dir="ltr">≤</span></span> <span class="math" dir="ltr">۳|D|</span>، و چون <span class="math" dir="ltr">|D|</span> عدد صحیح است، <span class="math" dir="ltr">|D|</span> <span class="math"><span class="math" dir="ltr">≥</span></span> ۳. بنابراین <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P₇) = ۳</span>.
+          </p>
+          <p class="panel__text">
+            برای <span class="math" dir="ltr">C₆: ۶</span> <span class="math"><span class="math" dir="ltr">≤</span></span> <span class="math" dir="ltr">۳|D|</span>، پس <span class="math" dir="ltr">|D|</span> <span class="math"><span class="math" dir="ltr">≥</span></span> ۲ و <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(C₆) = ۲</span>.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ۳ب. مینیمال در برابر مینیمم: پن با شش پانل -->
+  <section class="act act--pan" data-sc-act="pan" data-sc-span="5" aria-label="مینیمال در برابر مینیمم در مسیر P₆">
+    <div class="stage" data-sc-stage>
+      <div class="rail" data-sc-pan="0">
+        <article class="panel">
+          <figure class="figure" data-graph="P6" data-marked="1,3,5">
+            <figcaption>مسیر <span class="math" dir="ltr">P₆</span> با <span class="math" dir="ltr">D = {۲، ۴، ۶}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            همه‌ی رأس‌ها پوشش داده شده‌اند، پس <span class="math" dir="ltr">D</span> احاطه‌گر است. حالا بررسی می‌کنیم آیا با حذف هر عضو،
+            احاطه‌گری حفظ می‌شود.
+          </p>
+        </article>
+        <article class="panel">
+          <figure class="figure" data-graph="P6" data-marked="3,5" data-missing="1">
+            <figcaption>حذف <span class="math" dir="ltr">۲: D ∖ {۲} = {۴، ۶}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            <span class="math" dir="ltr">N[۱] = {۱، ۲}</span> و ۲ دیگر در مجموعه نیست. پس رأس ۱ پوشش داده نمی‌شود.
+          </p>
+        </article>
+        <article class="panel">
+          <figure class="figure" data-graph="P6" data-marked="1,5" data-missing="3">
+            <figcaption>حذف <span class="math" dir="ltr">۴: D ∖ {۴} = {۲، ۶}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            <span class="math" dir="ltr">N[۴] = {۳، ۴، ۵}</span> و هیچ‌کدام از این سه رأس در <span class="math" dir="ltr">D ∖ {۴}</span> نیستند. پس رأس ۴ پوشش داده نمی‌شود.
+          </p>
+        </article>
+        <article class="panel">
+          <figure class="figure" data-graph="P6" data-marked="1,3" data-missing="5">
+            <figcaption>حذف <span class="math" dir="ltr">۶: D ∖ {۶} = {۲، ۴}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            <span class="math" dir="ltr">N[۶] = {۵، ۶}</span> و هیچ‌کدام در <span class="math" dir="ltr">D ∖ {۶}</span> نیستند. پس رأس ۶ پوشش داده نمی‌شود. بنابراین <span class="math" dir="ltr">D</span> مینیمال است.
+          </p>
+        </article>
+        <article class="panel">
+          <figure class="figure" data-graph="P6" data-marked="1,4">
+            <figcaption>مجموعه‌ی <span class="math" dir="ltr">D' = {۲، ۵}</span></figcaption>
+          </figure>
+          <p class="panel__text">
+            <span class="math" dir="ltr">D'</span> احاطه‌گر است و تنها دو عضو دارد. از <span class="math" dir="ltr">۶ ≤ ۳|D|</span> نتیجه می‌شود <span class="math" dir="ltr">|D| ≥ ۲</span>، پس <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P₆) = ۲</span>.
+          </p>
+        </article>
+        <article class="panel panel--proof">
+          <h2 class="panel__title">مینیمال، نه لزوماً مینیمم</h2>
+          <p class="panel__text">
+            هر احاطه‌گر مینیمم مینیمال است. اگر حذف عضوی احاطه‌گری را خراب نکند، زیرمجموعه‌ای احاطه‌گر
+            با کمتر از <span class="gamma"><span class="math" dir="ltr">γ</span></span> عضو به دست می‌آید که ممکن نیست.
+          </p>
+          <p class="panel__text">
+            عکس این حکم درست نیست. <span class="math" dir="ltr">D = {۲، ۴، ۶}</span> مینیمال است، اما <span class="math" dir="ltr">|D| = ۳</span> و <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P₆) = ۲</span>.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ۴. قضیه و مثال‌ها: فلو -->
+  <section class="flow" data-sc-act="flow">
+    <div class="flow__wrap">
+      <h2 class="display display--lg" data-sc-in>قضیه‌ی مسیر و دور</h2>
+      <p class="lede" data-sc-in>
+        برای <span class="math" dir="ltr">n</span> <span class="math"><span class="math" dir="ltr">≥</span></span> ۱ داریم <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P<sub>n</sub>) =</span> <span class="math"><span class="math" dir="ltr">⌈</span></span><span class="math" dir="ltr">n/۳</span><span class="math"><span class="math" dir="ltr">⌉</span></span>، و برای <span class="math" dir="ltr">n</span> <span class="math"><span class="math" dir="ltr">≥</span></span> ۳ داریم <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(C<sub>n</sub>) =</span> <span class="math"><span class="math" dir="ltr">⌈</span></span><span class="math" dir="ltr">n/۳</span><span class="math"><span class="math" dir="ltr">⌉</span></span>.
+      </p>
+      <div class="table-wrap" data-sc-in>
+        <table class="data">
+          <thead>
+            <tr><th scope="col"><span class="math" dir="ltr">n</span></th><th scope="col">۱</th><th scope="col">۲</th><th scope="col">۳</th><th scope="col">۴</th><th scope="col">۵</th><th scope="col">۶</th><th scope="col">۷</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P<sub>n</sub>)</span></th><td>۱</td><td>۱</td><td>۱</td><td>۲</td><td>۲</td><td>۲</td><td>۳</td></tr>
+            <tr><th scope="row"><span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(C<sub>n</sub>)</span></th><td>-</td><td>-</td><td>۱</td><td>۲</td><td>۲</td><td>۲</td><td>۳</td></tr>
+            <tr><th scope="row"><span class="math"><span class="math" dir="ltr">⌈</span></span><span class="math" dir="ltr">n/۳</span><span class="math"><span class="math" dir="ltr">⌉</span></span></th><td>۱</td><td>۱</td><td>۱</td><td>۲</td><td>۲</td><td>۲</td><td>۳</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" data-sc-in>
+        <strong>ساخت:</strong> رأس‌های ۲، ۵، ۸، … را انتخاب کنید و در صورت لزوم رأس انتهایی <span class="math" dir="ltr">n</span> را هم اضافه کنید.
+        این مجموعه <span class="math"><span class="math" dir="ltr">⌈</span></span><span class="math" dir="ltr">n/۳</span><span class="math"><span class="math" dir="ltr">⌉</span></span> عضو دارد و احاطه‌گر است.
+      </p>
+      <h3 class="display display--md" data-sc-in>مثال‌های دیگر</h3>
+      <ul class="facts" data-sc-in>
+        <li><span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(K<sub>n</sub>) = ۱</span>، چون هر رأس با همه‌ی رأس‌های دیگر مجاور است.</li>
+        <li><span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(S<sub>n</sub>) = ۱</span>، چون مرکز ستاره همه‌ی رأس‌ها را پوشش می‌دهد.</li>
+        <li><span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(W<sub>n</sub>) = ۱</span>، چون مرکز چرخ همه‌ی رأس‌ها را پوشش می‌دهد.</li>
+        <li><span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(K<sub>m,n</sub>) = ۱</span> اگر <span class="math" dir="ltr">m = ۱</span> یا <span class="math" dir="ltr">n = ۱</span>، و <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(K<sub>m,n</sub>) = ۲</span> اگر <span class="math" dir="ltr">m, n</span> <span class="math"><span class="math" dir="ltr">≥</span></span> ۲.</li>
+        <li><span class="gamma"><span class="math" dir="ltr">γ</span></span>(پترسن) <span class="math" dir="ltr">= ۳</span>. گراف پترسن ۱۰ رأس و ۱۵ یال دارد و هر رأس درجه‌ی ۳ دارد، پس بسته‌ی همسایگی هر رأس ۴ رأس است. از <span class="math" dir="ltr">۱۰ ≤ ۴|D|</span> نتیجه می‌شود <span class="math" dir="ltr">|D| ≥ ۳</span>، و یک مجموعه‌ی احاطه‌گر سه‌عضوی وجود دارد.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ۵. اقدام: پین، آخرین عنصر صفحه -->
+  <section class="act act--pin act--close" data-sc-act="pin" data-sc-span="1.4" aria-label="شروع بازی">
+    <div class="stage close" data-sc-stage>
+      <div class="close__inner">
+        <h2 class="display display--lg">حالا خودتان امتحان کنید.</h2>
+        <p class="lede">
+          در بازی، مجموعه‌ای بسازید که همه‌ی رأس‌ها را احاطه کند، و تلاش کنید کوچک‌ترین
+          مجموعه‌ی ممکن را پیدا کنید.
+        </p>
+        <a class="btn btn--large" href="../index.html">شروع بازی</a>
+      </div>
+      <footer class="foot">
+        منبع: ریاضیات گسسته، پایه‌ی دوازدهم، رشته‌ی ریاضی-فیزیک، فصل دوم، درس دوم.
+      </footer>
+    </div>
+  </section>
+
+</main>
+
+<script src="vendor/scrollcraft.js"></script>
+<script src="intro.js"></script>
+<script>ScrollCraft.mount(document.body);</script>
+</body>
+</html>

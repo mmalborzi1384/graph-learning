@@ -1,0 +1,4 @@
+# وابستگی‌های تست‌های مرورگری (Python 3.10+)
+playwright>=1.40
+# بعد از نصب:  python3 -m playwright install --with-deps chromium
+# تست‌های واحد به Node.js 18+ نیاز دارند (بدون وابستگی npm)

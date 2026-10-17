@@ -1,0 +1,54 @@
+/*
+ * petersen-bg.css: استایل پس‌زمینه‌ی متحرک گراف‌ها (نسخه ۶.۳.۰)
+ *
+ * این فایل فقط مربوط به پس‌زمینه است. برای حذف آن، این فایل و خط مربوطه در index.html را
+ * بردارید. اگر فقط می‌خواهید پس‌زمینه پنهان شود، کافی است #bg-animation را display: none کنید.
+ */
+
+/* لایه‌ی ثابت پشت همه‌ی محتوا. pointer-events: none تضمین می‌کند کلیک‌ها به محتوا برسند. */
+#bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* بوم: مانند object-fit: cover، پر کردن کامل نما با حفظ نسبت تصویر (لبه‌ها در صفحه‌های باریک بریده می‌شوند) */
+#bg-animation canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* پوشش نیمه‌شفاف روی صحنه: صحنه کم‌رنگ و آرام دیده می‌شود و متن روی آن خوانا می‌ماند.
+   رنگ پوشش از توکن‌های حالت روشن/تاریک (--veil-a و --veil-b در style.css) می‌آید. */
+#bg-animation::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--veil-a), var(--veil-b));
+  pointer-events: none;
+}
+
+/*
+ * بدنه یک زمینه‌ی تیره دارد. بدون isolation، این زمینه روی لایه‌ی z-index: -1 نقاشی می‌شود
+ * و پس‌زمینه را می‌پوشاند. isolation: isolate باعث می‌شود بدنه زمینه‌ی خودش را داشته باشد
+ * و پس‌زمینه‌ی متحرک بالای آن قرار گیرد.
+ */
+body {
+  position: relative;
+  isolation: isolate;
+}
+
+/* محتوای اصلی سایت بالای پس‌زمینه می‌ماند */
+body > *:not(#bg-animation) {
+  position: relative;
+  z-index: 0;
+}

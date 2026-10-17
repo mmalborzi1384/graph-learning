@@ -1,0 +1,215 @@
+/*!
+ * triggers.css — تریگرهای نسخه ۶.۳.۰ (مشترک بین بازی و صفحه‌ی معرفی)
+ *
+ *   .trigger--theme  کلید روشن/تاریک: خورشید در حالت روشن، ماه و ستاره در حالت تاریک.
+ *                    با View Transitions، تغییر حالت از محل کلید به‌صورت دایره‌ی گسترده دیده می‌شود.
+ *   .trigger--mode   کلید حالت بازی: «امتیازی» یا «فقط تمرین». نشانگر با فنر روی گزینه‌ی فعال می‌سُرد.
+ *
+ * ورودی هر تریگر یک چک‌باکس با role="switch" است که کل برچسب را می‌پوشاند؛ کلیک، لمس و
+ * کلید Space/Enter روی آن کار می‌کند. کاهش حرکت (prefers-reduced-motion) همه‌ی انیمیشن‌ها را خاموش می‌کند.
+ */
+
+/* ---------- ورودی نامرئی روی کل تریگر ---------- */
+.trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.trigger input[type="checkbox"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.trigger input:focus-visible ~ .trigger__track { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--hint); }
+
+/* ---------- کلید روشن/تاریک ---------- */
+.trigger--theme .trigger__track {
+  position: relative;
+  width: 68px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--grid);
+  background: linear-gradient(120deg, #BEE6F4 0%, #FFF0C2 100%);
+  overflow: hidden;
+  transition: background 0.7s var(--ease), border-color 0.7s var(--ease), box-shadow 0.4s var(--ease);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.trigger--theme:hover .trigger__track { transform: scale(1.04); }
+.trigger--theme:active .trigger__track { transform: scale(0.97); }
+.trigger--theme .trigger__track,
+.trigger--theme .trigger__knob { transition-property: background, border-color, box-shadow, transform, left; }
+
+/* گره‌ی خورشید/ماه */
+.trigger--theme .trigger__knob {
+  position: absolute;
+  top: 3px;
+  left: 35px;                              /* روشن: سمت راست (خورشید) */
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: left 0.75s cubic-bezier(0.34, 1.4, 0.5, 1), transform 0.75s cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.trigger--theme .ico { position: absolute; inset: 0; border-radius: 50%; }
+
+/* خورشید: دیسک زرد با پرتوهای چرخان */
+.trigger--theme .ico--sun {
+  background: radial-gradient(circle at 35% 35%, #FFE08A 0%, #F7B731 60%, #E89B1C 100%);
+  box-shadow: 0 0 10px rgba(247, 183, 49, 0.55);
+  transition: transform 0.9s cubic-bezier(0.34, 1.4, 0.5, 1), opacity 0.5s var(--ease);
+}
+.trigger--theme .ico--sun::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(#F7B731 0deg 9deg, transparent 9deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 55%, #000 58%, #000 72%, transparent 75%);
+          mask: radial-gradient(circle, transparent 55%, #000 58%, #000 72%, transparent 75%);
+  animation: sun-spin 14s linear infinite;
+}
+
+/* ماه: هلال با بریدگی سایه‌دار */
+.trigger--theme .ico--moon {
+  background: #EDE6D3;
+  box-shadow: inset -7px -3px 0 0 #1C3D33, 0 0 12px rgba(237, 230, 211, 0.35);
+  transform: scale(0) rotate(-120deg);
+  opacity: 0;
+  transition: transform 0.9s cubic-bezier(0.34, 1.4, 0.5, 1) 0.1s, opacity 0.5s var(--ease) 0.1s;
+}
+
+/* ستاره‌ها: فقط در حالت تاریک */
+.trigger--theme .trigger__stars { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s var(--ease) 0.2s; }
+.trigger--theme .trigger__stars i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #EDE6D3;
+  box-shadow: 0 0 4px #EDE6D3;
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+.trigger--theme .trigger__stars i:nth-child(1) { left: 9px; top: 9px; }
+.trigger--theme .trigger__stars i:nth-child(2) { left: 16px; top: 22px; animation-delay: 0.9s; width: 2px; height: 2px; }
+.trigger--theme .trigger__stars i:nth-child(3) { left: 24px; top: 8px; animation-delay: 1.6s; }
+
+.trigger--theme .trigger__text {
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* حالت تاریک (تیک خورده) */
+.trigger--theme input:checked ~ .trigger__track {
+  background: linear-gradient(120deg, #0B1712 0%, #1E4036 100%);
+  border-color: #2C4238;
+}
+.trigger--theme input:checked ~ .trigger__track .trigger__knob { left: 3px; }
+.trigger--theme input:checked ~ .trigger__track .ico--sun {
+  transform: rotate(200deg) scale(0);
+  opacity: 0;
+  transition-delay: 0s;
+}
+.trigger--theme input:checked ~ .trigger__track .ico--sun::before { animation-play-state: paused; }
+.trigger--theme input:checked ~ .trigger__track .ico--moon {
+  transform: scale(1) rotate(0deg);
+  opacity: 1;
+}
+.trigger--theme input:checked ~ .trigger__track .trigger__stars { opacity: 1; }
+
+/* ---------- کلید حالت بازی: امتیازی | فقط تمرین ---------- */
+.trigger--mode {
+  display: flex;
+  width: 100%;
+  max-width: 320px;
+  margin: var(--space-1) 0 var(--space-2);
+}
+.trigger--mode .trigger__track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 46px;
+  padding: 3px;
+  border: 1.5px solid var(--grid);
+  border-radius: 999px;
+  background: var(--panel, var(--sheet));
+  transition: border-color 0.5s var(--ease), box-shadow 0.5s var(--ease);
+}
+.trigger--mode:hover .trigger__track { border-color: var(--brand); }
+.trigger--mode .trigger__opt {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  transition: color 0.45s var(--ease);
+}
+/* نشانگر: در حالت امتیازی طلایی (سمت راست، اول)، در تمرین سبز-فیروزه‌ای (سمت چپ) */
+.trigger--mode .trigger__thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: calc(50% + 0px);
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 6px 16px -8px var(--gold);
+  transition: left 0.6s cubic-bezier(0.34, 1.35, 0.5, 1), background 0.5s var(--ease), box-shadow 0.5s var(--ease);
+}
+.trigger--mode .trigger__opt:first-child { color: var(--ink); }
+.trigger--mode .trigger__opt:last-child { color: var(--ink-soft); }
+
+.trigger--mode input:checked ~ .trigger__track .trigger__thumb {
+  left: 3px;
+  background: var(--hint);
+  box-shadow: 0 6px 16px -8px var(--hint);
+}
+.trigger--mode input:checked ~ .trigger__track .trigger__opt:first-child { color: var(--ink-soft); }
+.trigger--mode input:checked ~ .trigger__track .trigger__opt:last-child { color: var(--paper); }
+.trigger--mode input:checked ~ .trigger__track { border-color: var(--hint); }
+
+/* ---------- انیمیشن‌ها ---------- */
+@keyframes sun-spin { to { transform: rotate(360deg); } }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+/* View Transition: تغییر حالت با دایره‌ی گسترده (در js/theme.js تنظیم می‌شود) */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+
+/* جایگزین بدون View Transition: گذار رنگ کوتاه روی کل صفحه */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition: background-color 0.6s var(--ease), color 0.6s var(--ease), border-color 0.6s var(--ease), fill 0.6s var(--ease), stroke 0.6s var(--ease) !important;
+}
+
+/* ---------- کاهش حرکت ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .trigger, .trigger *, .trigger *::before, .trigger *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .trigger--theme .trigger__text { display: none; }
+}

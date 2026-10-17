@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>احاطه‌گری در دور C₆ (γ = ۲)</title>
+<!-- دور C6: D = {1, 4}؛ N[1] = {6, 1, 2}، N[4] = {3, 4, 5}؛ اجتماع = همه‌ی ۶ رأس؛ γ(C6) = 2 -->
+<style>
+  html, body { margin: 0; background: #FFF6E5; }
+  #scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; pointer-events: none; }
+  .spacer { height: 250vh; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<h1 class="sr-only">احاطه‌گری در دور C₆ (γ = ۲)</h1>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="spacer"></div>
+<script src="../js/scenes.js"></script>
+<script src="../js/dom-scene.js"></script>
+<script>
+  DomScene.mount({
+    canvas: document.getElementById('scene'),
+    scenes: [DomScenes.C6]
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>احاطه‌گری در ستاره‌ی S₄ (γ = ۱)</title>
+<!-- ستاره S4: مرکز ۱، برگ‌ها ۲، ۳، ۴؛ D = {1}؛ N[1] = همه‌ی رئوس؛ γ(S4) = 1 -->
+<style>
+  html, body { margin: 0; background: #FFF6E5; }
+  #scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; pointer-events: none; }
+  .spacer { height: 250vh; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<h1 class="sr-only">احاطه‌گری در ستاره‌ی S₄ (γ = ۱)</h1>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="spacer"></div>
+<script src="../js/scenes.js"></script>
+<script src="../js/dom-scene.js"></script>
+<script>
+  DomScene.mount({
+    canvas: document.getElementById('scene'),
+    scenes: [DomScenes.STAR4]
+  });
+</script>
+</body>
+</html>

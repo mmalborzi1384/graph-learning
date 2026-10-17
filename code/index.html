@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>چالش γ — آزمایشگاه احاطه‌گری</title>
+  <meta name="description" content="بازی و آزمایشگاه ریاضی برای آموزش احاطه‌گری و عدد احاطه‌گری (ریاضیات گسسته ۱۲، فصل ۲، درس ۲)">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/petersen-bg.css">
+  <link rel="stylesheet" href="css/triggers.css">
+  <!-- حالت روشن/تاریک: پیش از رندر اعمال می‌شود تا صفحه نمی‌پرد -->
+  <script src="js/theme.js"></script>
+</head>
+<body>
+<div id="bg-animation" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>چالش <span class="gamma"><span class="math" dir="ltr">γ</span></span></h1>
+    <p>مهره بگذار، پوشش را ببین، و کمترین تعداد مهره را پیدا کن.</p>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="بخش‌های برنامه">
+    <button class="tab active" role="tab" aria-selected="true" aria-controls="view-game" data-view="game" id="tab-game">بازی</button>
+    <button class="tab scoring" role="tab" aria-selected="false" aria-controls="view-scores" data-view="scores" id="tab-scores">کارنامه</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="view-lab" data-view="lab" id="tab-lab">آزمایشگاه</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="view-help" data-view="help" id="tab-help">تعاریف</button>
+  </nav>
+  <div class="topbar__tools">
+    <label class="trigger trigger--theme" title="حالت تاریک یا روشن">
+      <input type="checkbox" id="theme-toggle" role="switch" aria-checked="false" aria-label="حالت تاریک">
+      <span class="trigger__track" aria-hidden="true">
+        <span class="trigger__stars"><i></i><i></i><i></i></span>
+        <span class="trigger__knob">
+          <span class="ico ico--sun"></span>
+          <span class="ico ico--moon"></span>
+        </span>
+      </span>
+      <span class="trigger__text">حالت تاریک</span>
+    </label>
+    <a class="topbar__link" href="intro/index.html">صفحه‌ی معرفی</a>
+  </div>
+</header>
+
+<main>
+  <!-- ======================= بازی ======================= -->
+  <section id="view-game" class="view active" role="tabpanel" aria-labelledby="tab-game">
+    <div class="game-layout">
+
+      <aside class="panel controls">
+        <h2>گراف</h2>
+        <label for="graph-select">انتخاب گراف</label>
+        <select id="graph-select"></select>
+        <p class="hint" id="graph-meta"></p>
+
+        <div class="btn-row">
+          <button id="btn-check" class="btn primary">مرحله ۱: تأیید احاطه</button>
+          <button id="btn-reset" class="btn">مهره‌ها را پاک کن</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-check2" class="btn primary" disabled>مرحله ۲: تأیید مینیمال و مینیمم</button>
+        </div>
+        <p class="hint">ابتدا مرحله‌ی ۱ را بزنید. اگر مجموعه احاطه‌گر بود، مرحله‌ی ۲ فعال می‌شود تا مینیمال و مینیمم بودن بررسی شود.</p>
+        <div class="btn-row">
+          <button id="btn-next" class="btn primary">ثبت و گراف بعدی</button>
+          <button id="btn-random" class="btn">گراف تصادفی</button>
+        </div>
+
+        <h2>حالت بازی</h2>
+        <label class="switch scoring">
+          <input type="checkbox" id="team-mode">
+          <span>بازی دو گروهی</span>
+        </label>
+        <label class="trigger trigger--mode">
+          <input type="checkbox" id="practice-mode" role="switch" aria-checked="false" aria-label="حالت بازی: امتیازی یا فقط تمرین">
+          <span class="trigger__track" aria-hidden="true">
+            <span class="trigger__opt">امتیازی</span>
+            <span class="trigger__opt">فقط تمرین</span>
+            <span class="trigger__thumb"></span>
+          </span>
+        </label>
+        <div id="practice-box" class="practice-box" hidden></div>
+        <p class="hint scoring">در حالت دو گروهی، نوبت بین «گروه <span class="math" dir="ltr">A</span>» و «گروه <span class="math" dir="ltr">B</span>» به‌صورت متناوب عوض می‌شود.</p>
+
+        <div class="btn-row">
+          <button id="btn-restart" class="btn danger">شروع دوباره بازی</button>
+        </div>
+
+        <h2>ابزارها</h2>
+        <div class="btn-row">
+          <button id="btn-undo" class="btn" title="Ctrl+Z">بازگشت</button>
+          <button id="btn-redo" class="btn" title="Ctrl+Y">تکرار</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-hint" class="btn">راهنما (<span id="hint-level">۰</span>/۳)</button>
+        </div>
+        <p class="hint scoring">راهنما امتیاز را تغییر نمی‌دهد؛ برای تمرین است و در سابقه ثبت می‌شود.</p>
+
+        <details class="builder" id="gen-builder">
+          <summary>رسم بر اساس <span class="math" dir="ltr">n</span> و <span class="math" dir="ltr">γ</span></summary>
+          <p class="hint">تعداد رأس <span class="math" dir="ltr">n</span> و عدد احاطه‌گری <span class="math" dir="ltr">k</span> را وارد کنید تا گرافی با همین مشخصات رسم شود.</p>
+          <div class="inline-row">
+            <label for="gen-n"><span class="math" dir="ltr">n</span> (۲ تا ۱۰)</label>
+            <input type="number" id="gen-n" min="2" max="10" value="6">
+            <label for="gen-k"><span class="math" dir="ltr">γ = k</span> (۱ تا <span class="math" dir="ltr">n</span>)</label>
+            <input type="number" id="gen-k" min="1" max="10" value="2">
+          </div>
+          <div class="btn-row">
+            <button id="btn-generate" class="btn primary">رسم گراف</button>
+          </div>
+          <p class="hint" id="gen-msg"></p>
+        </details>
+
+        <details class="builder" id="custom-builder">
+          <summary>ساخت گراف سفارشی</summary>
+          <label for="custom-n">تعداد رأس (۲ تا ۱۰)</label>
+          <input type="number" id="custom-n" min="2" max="10" value="4">
+          <div class="table-wrap"><table class="data-table matrix-table" id="custom-matrix"></table></div>
+          <div class="btn-row">
+            <button id="btn-custom-apply" class="btn primary">بازی با این گراف</button>
+          </div>
+          <p class="hint" id="custom-msg"></p>
+        </details>
+
+        <div id="gamma-box" class="gamma-box" hidden>
+          <h2>محاسبه‌ی <span class="math" dir="ltr">γ(G)</span></h2>
+          <p id="gamma-text"></p>
+          <p class="hint" id="gamma-set"></p>
+          <div id="gamma-sets" class="set-list"></div>
+        </div>
+        <div class="btn-row" id="gamma-btn-row">
+          <button id="btn-gamma" class="btn ghost">محاسبه‌ی <span class="math" dir="ltr">γ(G)</span></button>
+        </div>
+      </aside>
+
+      <section class="panel board-panel" aria-label="صفحه‌ی گراف">
+        <div class="board-head">
+          <span id="status-badge" class="badge">آماده</span>
+          <span id="counts" class="counts"></span>
+        </div>
+        <div id="board" class="board"></div>
+        <div class="legend">
+          <span><i class="dot marked"></i> مهره: رنگ خودش</span>
+          <span><i class="dot covered"></i> پوشش‌داده‌شده: هاشور با رنگ مهره‌ی پوشاننده</span>
+          <span><i class="dot shared"></i> پوشش مشترک: دایره نیمه‌نیمه با همه‌ی رنگ‌ها</span>
+          <span><i class="dot uncovered"></i> پوشش‌داده‌نشده</span>
+        </div>
+        <div id="result" class="result" role="status" aria-live="polite"></div>
+        <div id="removal-box" class="removal-box" hidden>
+          <h3>آزمون حذف: آیا مجموعه مینیمال است؟</h3>
+          <p class="hint">هر مهره را برای حذف انتخاب کنید (چند مهره هم می‌شود) و ببینید کدام رأس‌ها بی‌پوشش می‌شوند. اگر حذف هیچ مهره‌ای احاطه‌گری را خراب نکند، آن مهره زائد است و مجموعه مینیمال نیست.</p>
+          <ul id="removal-list" class="removal-list"></ul>
+          <div class="removal-actions">
+            <button id="removal-apply" class="btn primary small" hidden>اعمال حذف</button>
+            <button id="removal-clear" class="btn small" hidden>لغو انتخاب‌ها</button>
+          </div>
+          <p id="removal-summary" class="hint"></p>
+        </div>
+        <div id="hint-box" class="hint-box" role="note" hidden></div>
+        <div class="live-line scoring"><span id="live-score" class="counts"></span></div>
+        <details class="builder rules-box" id="rules-box">
+          <summary>راهنمای سریع</summary>
+          <ul class="rules">
+          <li>روی رأس کلیک کنید تا مهره گذاشته یا برداشته شود. بعد از تأیید مرحله‌ی ۱، کلیک روی مهره‌ی بی‌نیاز آن را برای حذف انتخاب می‌کند؛ چند مهره را می‌توانید انتخاب و با «اعمال حذف» یکجا حذف کنید.</li>
+          <li>مهره، خود رأس و همسایگانش را پوشش می‌دهد.</li>
+          <li>مرحله‌ی ۱: احاطه‌گری را تأیید کنید. مرحله‌ی ۲: مینیمال و مینیمم بودن را تأیید کنید.</li>
+          <li class="scoring">امتیاز: ۱۵ مینیمم <span class="math" dir="ltr">(|D| = γ)</span>، ۱۰ مینیمال ولی غیرمینیمم، ۵ احاطه‌گر ولی غیرمینیمال (یا بدون مرحله‌ی ۲)، ۰ احاطه‌گر نیست.</li>
+          </ul>
+        </details>
+      </section>
+    </div>
+    <!-- فضای اسکرول تب: انیمیشن این تب در کل طول آن تب پخش می‌شود -->
+    <div class="scroll-runway" aria-hidden="true"></div>
+  </section>
+
+  <!-- ======================= کارنامه ======================= -->
+  <section id="view-scores" class="view" role="tabpanel" aria-labelledby="tab-scores">
+    <div class="scores-layout">
+      <aside class="panel scoreboard">
+        <h2>امتیاز</h2>
+        <table class="score-table" id="score-table">
+          <thead><tr><th>گروه</th><th>امتیاز</th><th>دورها</th></tr></thead>
+          <tbody id="score-body"></tbody>
+        </table>
+        <p class="hint" id="turn-text"></p>
+
+        <h2>سابقه‌ی دورها</h2>
+        <ol id="history" class="history"></ol>
+        <div class="btn-row">
+          <button id="btn-csv" class="btn">خروجی CSV سابقه</button>
+        </div>
+
+        <h2>کارنامه‌ی گراف‌ها</h2>
+        <label for="card-select">کارنامه‌ی فعال</label>
+        <select id="card-select"></select>
+        <div class="inline-row">
+          <input type="text" id="card-name" placeholder="نام کارنامه‌ی جدید" aria-label="نام کارنامه‌ی جدید" maxlength="30">
+          <button id="btn-card-add" class="btn small">افزودن کارنامه‌ی جدید</button>
+        </div>
+        <div class="btn-row">
+          <button id="btn-card-reset" class="btn danger">صفر کردن کارنامه‌ی فعال</button>
+        </div>
+        <p id="card-msg" class="hint"></p>
+        <table class="score-table" id="records-table">
+          <thead><tr><th>گراف</th><th>تلاش</th><th>بهترین امتیاز</th></tr></thead>
+          <tbody id="records-body"></tbody>
+        </table>
+      </aside>
+    </div>
+    <div class="scroll-runway" aria-hidden="true"></div>
+  </section>
+
+  <!-- ======================= آزمایشگاه ======================= -->
+  <section id="view-lab" class="view" role="tabpanel" aria-labelledby="tab-lab">
+    <div class="lab-grid">
+
+      <!-- ایستگاه ۱ -->
+      <article class="panel station">
+        <h2>ایستگاه ۱: محاسبه‌ی مستقیم <span class="math" dir="ltr">γ</span></h2>
+        <p>برای هر گراف، کوچک‌ترین مجموعه‌ی احاطه‌گر محاسبه می‌شود (جستجوی فراگیر).</p>
+        <table class="data-table">
+          <thead><tr><th>گراف</th><th><span class="math" dir="ltr">n</span></th><th>مجموعه‌ی مینیمم</th><th><span class="math" dir="ltr">γ(G)</span></th></tr></thead>
+          <tbody id="st1-body"></tbody>
+        </table>
+      </article>
+
+      <!-- ایستگاه ۲ -->
+      <article class="panel station">
+        <h2>ایستگاه ۲: کشف فرمول <span class="math" dir="ltr">γ(P<sub>n</sub>)</span> و <span class="math" dir="ltr">γ(C<sub>n</sub>)</span></h2>
+        <p>مقادیر محاسبه‌شده را با <span class="math" dir="ltr">⌈n/۳⌉</span> مقایسه کنید.</p>
+        <div class="table-wrap">
+          <table class="data-table" id="st2-table"></table>
+        </div>
+        <p class="hint">اثبات کران پایین: هر رأس حداکثر ۳ رأس را پوشش می‌دهد، پس <span class="math" dir="ltr">۳k ≥ n</span> و <span class="math" dir="ltr">k ≥ ⌈n/۳⌉</span>. اثبات کران بالا: بلوک‌بندی سه‌تایی و انتخاب رأس‌های وسط.</p>
+      </article>
+
+      <!-- ایستگاه ۳ -->
+      <article class="panel station">
+        <h2>ایستگاه ۳: بررسی کران‌ها و اثر یال</h2>
+        <label for="st3-graph">گراف</label>
+        <select id="st3-graph"></select>
+        <table class="data-table" id="st3-table"></table>
+        <h3>اثر افزودن یال</h3>
+        <div class="inline-row">
+          <label for="st3-edge">یال غیرموجود:</label>
+          <select id="st3-edge"></select>
+          <button id="st3-add" class="btn small">افزودن و محاسبه</button>
+        </div>
+        <p id="st3-edge-result" class="hint"></p>
+      </article>
+
+      <!-- ایستگاه ۴ -->
+      <article class="panel station">
+        <h2>ایستگاه ۴: مینیمال در برابر مینیمم</h2>
+        <p>مجموعه‌ی احاطه‌گر <strong>مینیمال</strong> است اگر حذف هر مهره، احاطه‌گری را از بین ببرد. مجموعه‌ی <strong>مینیمم</strong> کوچک‌ترین مجموعه‌ی احاطه‌گر است <span class="math" dir="ltr">(|D| = γ)</span>. هر مینیمم مینیمال است، ولی عکس آن همیشه درست نیست.</p>
+        <label for="st4-graph">گراف</label>
+        <select id="st4-graph"></select>
+        <p id="st4-summary" class="hint"></p>
+        <div class="table-wrap">
+          <table class="data-table" id="st4-table"></table>
+        </div>
+        <p class="hint">مثال: در <span class="math" dir="ltr">P<sub>۶</sub></span> مجموعه‌ی <span class="math" dir="ltr">{۲، ۴، ۶}</span> مینیمال است (حذف هر عضو یک رأس را بی‌پوشش می‌گذارد)، ولی <span class="math" dir="ltr">|D| = ۳ > γ(P<sub>۶</sub>) = ۲</span>، پس مینیمم نیست.</p>
+      </article>
+
+      <!-- ایستگاه ۵ -->
+      <article class="panel station scoring">
+        <h2>ایستگاه ۵: بازی رقابتی «چالش <span class="math" dir="ltr">γ</span>»</h2>
+        <ol class="rules">
+          <li>دو گروه <span class="math" dir="ltr">A</span> و <span class="math" dir="ltr">B</span> ایجاد می‌شوند.</li>
+          <li>گروه فعال گراف را روی صفحه‌ی بازی حل می‌کند.</li>
+          <li>گروه مقابل مجموعه را تأیید یا رد می‌کند.</li>
+          <li>امتیاز: ۱۵ / ۱۰ / ۵ / ۰ مطابق قوانین امتیازدهی دو مرحله‌ای.</li>
+        </ol>
+        <button id="st5-go" class="btn primary">شروع بازی دو گروهی</button>
+      </article>
+
+    </div>
+    <div class="scroll-runway" aria-hidden="true"></div>
+  </section>
+
+  <!-- ======================= تعاریف ======================= -->
+  <section id="view-help" class="view" role="tabpanel" aria-labelledby="tab-help">
+    <article class="panel help">
+      <h2>تعاریف و قضایا</h2>
+      <p><strong>مجموعه‌ی احاطه‌گر:</strong> زیرمجموعه‌ی <span class="math" dir="ltr">D ⊆ V</span> احاطه‌گر است، هرگاه برای هر <span class="math" dir="ltr">v ∈ V</span> داشته باشیم: <span class="math" dir="ltr">v ∈ D</span> یا <span class="math" dir="ltr">N(v) ∩ D ≠ ∅</span>.</p>
+      <p><strong>مجموعه‌ی احاطه‌گر مینیمم:</strong> احاطه‌گری که کمترین تعداد عضو را دارد.</p>
+      <p><strong>عدد احاطه‌گری:</strong> <span class="math" dir="ltr">γ(G) = min |D|</span>، که کمینه روی همه‌ی مجموعه‌های احاطه‌گر <span class="math" dir="ltr">D ⊆ V</span> گرفته می‌شود.</p>
+      <h3>احاطه‌گر مینیمال و مینیمم</h3>
+      <p><strong>مجموعه‌ی احاطه‌گر مینیمال:</strong> احاطه‌گر <span class="math" dir="ltr">D</span> است که هیچ زیرمجموعه‌ی سره‌ی آن احاطه‌گر نیست. به‌زبان ساده، حذف هر مهره‌ی آن یک رأس را بی‌پوشش می‌گذارد.</p>
+      <p><strong>مجموعه‌ی احاطه‌گر مینیمم:</strong> احاطه‌گری با <span class="math" dir="ltr">|D| = γ(G)</span>، یعنی کوچک‌ترین اندازه‌ی ممکن.</p>
+      <ul>
+        <li>هر مجموعه‌ی مینیمم مینیمال است. (اگر زیرمجموعه‌ی سره‌ای احاطه‌گر باشد، <span class="math" dir="ltr">γ</span> کوچک‌تر از اندازه‌ی <span class="math" dir="ltr">D</span> می‌شد.)</li>
+        <li>عکس آن درست نیست: در <span class="math" dir="ltr">P<sub>۶</sub></span> مجموعه‌ی <span class="math" dir="ltr">{۲، ۴، ۶}</span> مینیمال است ولی مینیمم نیست، چون <span class="math" dir="ltr">γ(P<sub>۶</sub>) = ۲</span>.</li>
+        <li>هر مجموعه‌ی احاطه‌گر شامل یک مجموعه‌ی احاطه‌گر مینیمال است: مهره‌های زائد را یکی‌یکی حذف کنید تا دیگر حذف نشود.</li>
+      </ul>
+      <table class="data-table">
+        <thead><tr><th>ویژگی</th><th>مینیمال</th><th>مینیمم</th></tr></thead>
+        <tbody>
+          <tr><td>شرط</td><td>حذف هر عضو احاطه‌گری را خراب می‌کند</td><td>کمترین اندازه است، <span class="math" dir="ltr">|D| = γ(G)</span></td></tr>
+          <tr><td>تعداد در یک گراف</td><td>ممکن است چند مجموعه با اندازه‌های مختلف باشد</td><td>همه‌ی مینیمم‌ها اندازه‌ی یکسان <span class="math" dir="ltr">γ</span> دارند</td></tr>
+          <tr><td>بررسی</td><td>با حذف تک‌تک اعضا</td><td>با مقایسه‌ی اندازه با <span class="math" dir="ltr">γ</span></td></tr>
+        </tbody>
+      </table>
+      <h3>فرمول‌ها</h3>
+      <ul>
+        <li><span class="math" dir="ltr">γ(P<sub>n</sub>) = ⌈n/۳⌉</span> و <span class="math" dir="ltr">γ(C<sub>n</sub>) = ⌈n/۳⌉</span> (برای <span class="math" dir="ltr">n ≥ ۳</span> در <span class="math" dir="ltr">C<sub>n</sub></span>)</li>
+        <li><span class="math" dir="ltr">γ(K<sub>n</sub>) = ۱</span></li>
+        <li><span class="math" dir="ltr">γ(K<sub>m,n</sub>) = ۲</span> برای <span class="math" dir="ltr">m,n ≥ ۲</span>، و ۱ اگر <span class="math" dir="ltr">m = ۱</span> یا <span class="math" dir="ltr">n = ۱</span></li>
+        <li><span class="math" dir="ltr">γ(S<sub>n</sub>) = ۱</span> (ستاره)، <span class="math" dir="ltr">γ(W<sub>n</sub>) = ۱</span> (چرخ)</li>
+      </ul>
+      <h3>کران‌ها</h3>
+      <ul>
+        <li>کران پایین: <span class="math" dir="ltr">γ(G) ≥ n / (Δ(G) + ۱)</span></li>
+        <li>قضیه‌ی اور: اگر <span class="math" dir="ltr">G</span> رأس منفرد نداشته باشد، <span class="math" dir="ltr">γ(G) ≤ n/۲</span></li>
+        <li>افزودن یال: <span class="math" dir="ltr">γ</span> هرگز افزایش نمی‌یابد.</li>
+      </ul>
+      <h3>نمادگذاری</h3>
+      <ul>
+        <li><span class="math" dir="ltr">P<sub>n</sub></span>: مسیر با <span class="math" dir="ltr">n</span> رأس. <span class="math" dir="ltr">C<sub>n</sub></span>: دور با <span class="math" dir="ltr">n</span> رأس. <span class="math" dir="ltr">K<sub>n</sub></span>: گراف کامل با <span class="math" dir="ltr">n</span> رأس.</li>
+        <li><span class="math" dir="ltr">S<sub>n</sub></span>: ستاره با <span class="math" dir="ltr">n</span> رأس (یک مرکز و <span class="math" dir="ltr">n−۱</span> برگ).</li>
+        <li><span class="math" dir="ltr">W<sub>n</sub></span>: چرخ؛ دور <span class="math" dir="ltr">C<sub>n</sub></span> به‌علاوه‌ی یک مرکز (<span class="math" dir="ltr">n+۱</span> رأس).</li>
+        <li><span class="math" dir="ltr">N(v)</span>: همسایگان <span class="math" dir="ltr">v</span>.</li>
+        <li><span class="math" dir="ltr">N[v] = N(v) ∪ {v}</span>.</li>
+        <li><span class="math" dir="ltr">Δ(G)</span>: بیشینه‌ی درجه.</li>
+      </ul>
+      <p class="hint">محاسبه‌ی خودکار <span class="math" dir="ltr">γ</span> برای گراف‌هایی با حداکثر ۱۰ رأس انجام می‌شود.</p>
+    </article>
+    <div class="scroll-runway" aria-hidden="true"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  منبع: ریاضیات گسسته، پایه‌ی دوازدهم، رشته‌ی ریاضی-فیزیک. فصل دوم، درس دوم. نسخه‌ی ۶.۳.۰
+</footer>
+
+<script src="js/scenes.js" defer></script>
+<script src="js/dom-scene.js" defer></script>
+<script>
+  // پس‌زمینه‌ی اسکرول: هر تب انیمیشن خودش را دارد و در کل طول همان تب، با اسکرول پخش می‌شود
+  // (بازی: پترسن، کارنامه: C₆، آزمایشگاه: S₄، تعاریف: P₇)
+  document.addEventListener("DOMContentLoaded", function () {
+    DomScene.mount({
+      container: document.getElementById("bg-animation"),
+      sections: ["view-game", "view-scores", "view-lab", "view-help"].map(function (id) {
+        return document.getElementById(id);
+      }),
+      scenes: [DomScenes.PETERSEN, DomScenes.C6, DomScenes.STAR4, DomScenes.P7]
+    });
+  });
+</script>
+<script src="graphs.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
