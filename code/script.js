@@ -802,7 +802,7 @@
     const box = $('timed-box');
     box.hidden = false;
     box.textContent = (aborted ? 'چالش متوقف شد.' : 'چالش تمام شد.') + ' امتیاز کل: ' + toFa(t.score) +
-      ' از ' + toFa(TIMED_ROUNDS * 25) + ' (' + toFa(t.log.length) + ' گراف بررسی شد).';
+      ' (' + toFa(t.log.length) + ' گراف بررسی شد).';
     showNote('نتیجه‌ی چالش زمان‌دار', 'امتیاز کل ' + toFa(t.score) + '. این امتیاز در کارنامه ثبت نمی‌شود.');
     updateButtons();
   }
