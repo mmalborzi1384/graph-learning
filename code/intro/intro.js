@@ -19,6 +19,44 @@
     return String(x).replace(/[0-9]/g, function (d) { return FA[+d]; });
   }
 
+  /* ---------- کارت‌ها: محوشدن متقاطع با اسکرول ---------- */
+  var cardSets = [];
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /** هر بخش [data-cards] را ثبت می‌کند. */
+  function bindCards() {
+    document.documentElement.classList.add('js');
+    document.querySelectorAll('[data-cards]').forEach(function (act) {
+      cardSets.push({
+        act: act,
+        cards: Array.prototype.slice.call(act.querySelectorAll('.card')),
+        count: act.querySelector('[data-cards-count]'),
+        lastP: -1
+      });
+    });
+  }
+
+  /**
+   * موقعیت x = p·(n−۱) است. کارت i با opacity = 1 − |x − i| دیده می‌شود، پس وسط دو کارت
+   * هر دو نیمه‌شفاف‌اند و مجموع opacity همواره ۱ است. با حرکت کاهش‌یافته فقط کارت فعال دیده می‌شود.
+   */
+  function renderCards(c, p) {
+    var n = c.cards.length;
+    if (!n) return;
+    var t = Math.min(1, Math.max(0, p));
+    var x = t * (n - 1);
+    var active = Math.round(x);
+    var snap = !!(reduceMotion && reduceMotion.matches);
+    c.cards.forEach(function (card, i) {
+      var o = snap ? (i === active ? 1 : 0) : Math.max(0, 1 - Math.abs(x - i));
+      card.style.opacity = o.toFixed(3);
+      card.style.transform = snap ? 'none' : 'scale(' + (0.97 + 0.03 * o).toFixed(4) + ')';
+      card.style.pointerEvents = o >= 0.5 ? 'auto' : 'none';
+      card.setAttribute('aria-hidden', o >= 0.5 ? 'false' : 'true');
+    });
+    if (c.count) c.count.textContent = toFa(active + 1) + ' از ' + toFa(n);
+  }
+
   /** مختصات دایره‌ای برای دور C_n (بالا شروع می‌شود). */
   function ring(n) {
     var pts = [];
@@ -237,7 +275,91 @@
    * ------------------------------------------------------------------ */
   var driven = []; // بخش‌هایی که با --sc-p پیش می‌روند
 
+  /**
+   * ریل پیشرفت لبه‌ی راست: نوار طلایی نسبت اسکرول به کل صفحه را نشان می‌دهد؛
+   * هر بخش یک نقطه دارد. بخش فعال (وسط دید) برچسب و موج کوتاه می‌گیرد.
+   * با کلیک روی نقطه، صفحه به ابتدای همان بخش می‌رود.
+   */
+  function bindRail() {
+    var nav = document.getElementById('rail');
+    if (!nav) return;
+    var list = nav.querySelector('.rail__list');
+    var fill = nav.querySelector('.rail__fill');
+    var knob = nav.querySelector('.rail__knob');
+    var secs = Array.prototype.slice.call(document.querySelectorAll('section[data-rail]'));
+    var ticks = secs.map(function (sec, i) {
+      var li = document.createElement('li');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'rail__tick';
+      btn.setAttribute('aria-label', 'بخش ' + toFa(i + 1) + ': ' + sec.getAttribute('data-rail'));
+      var label = document.createElement('span');
+      label.className = 'rail__label';
+      label.textContent = sec.getAttribute('data-rail');
+      var dot = document.createElement('span');
+      dot.className = 'rail__dot';
+      btn.appendChild(label);
+      btn.appendChild(dot);
+      li.appendChild(btn);
+      list.appendChild(li);
+      btn.addEventListener('click', function () {
+        var top = sec.getBoundingClientRect().top + window.scrollY;
+        var smooth = !(reduceMotion && reduceMotion.matches);
+        window.scrollTo({ top: top, behavior: smooth ? 'smooth' : 'auto' });
+      });
+      return btn;
+    });
+    var queued = false;
+    var active = -1;
+    var items = ticks.map(function (b) { return b.parentNode; }); // li های نقطه‌ها
+    /** هر نقطه دقیقاً به موقعیت شروع بخش روی مسیر اسکرول می‌رود، نه فاصله‌ی برابر. */
+    function place(max) {
+      secs.forEach(function (sec, i) {
+        var top = sec.getBoundingClientRect().top + window.scrollY;
+        var f = max > 0 ? Math.min(1, Math.max(0, top / max)) : 0;
+        items[i].style.top = 'calc((100% - 24px) * ' + f.toFixed(5) + ')';
+      });
+    }
+    function pulse() {
+      knob.classList.remove('is-pulse');
+      void knob.offsetWidth; // اجرای دوباره‌ی انیمیشن
+      knob.classList.add('is-pulse');
+    }
+    function update() {
+      queued = false;
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      place(max);
+      fill.style.transform = 'scaleY(' + p.toFixed(4) + ')';
+      // دایره از ۱۲px تا ۱۲px مانده به پایین حرکت می‌کند (هم‌تراز با نقاط)
+      knob.style.top = 'calc(12px + (100% - 24px) * ' + p.toFixed(4) + ')';
+      var mid = window.scrollY + window.innerHeight * 0.5;
+      var idx = 0;
+      secs.forEach(function (sec, i) {
+        if (sec.getBoundingClientRect().top + window.scrollY <= mid) idx = i;
+      });
+      if (idx !== active) {
+        var prev = active;
+        active = idx;
+        ticks.forEach(function (t, i) {
+          t.classList.toggle('is-active', i === idx);
+          t.classList.toggle('is-passed', i < idx);
+        });
+        if (prev >= 0) pulse();
+      }
+      nav.classList.toggle('is-on', window.scrollY > 4);
+    }
+    window.addEventListener('scroll', function () {
+      if (!queued) { queued = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    window.addEventListener('load', update);
+    update();
+  }
+
   function init() {
+    bindRail();
+    bindCards();
     // بخش‌های پیش‌رونده
     document.querySelectorAll('[data-intro]').forEach(function (act) {
       var fig = act.querySelector('figure[data-graph]');
@@ -274,6 +396,13 @@
 
   /** حلقه‌ی اصلی: فقط وقتی --sc-p عوض شده کار می‌کند. */
   function loop() {
+    cardSets.forEach(function (c) {
+      var p = parseFloat(c.act.style.getPropertyValue('--sc-p'));
+      if (isNaN(p)) p = 0;
+      if (Math.abs(p - c.lastP) < 0.0005) return;
+      c.lastP = p;
+      renderCards(c, p);
+    });
     driven.forEach(function (d) {
       var p = parseFloat(d.act.style.getPropertyValue('--sc-p'));
       if (isNaN(p)) p = 0;

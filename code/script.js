@@ -1,5 +1,5 @@
 /**
- * script.js — منطق رابط کاربری «چالش γ» (نسخه ۶.۳.۰)
+ * script.js — منطق رابط کاربری «چالش γ» (نسخه ۶.۴.۰)
  *
  * بخش‌ها:
  *   ۱. وضعیت برنامه و ذخیره‌سازی (localStorage)
@@ -9,7 +9,7 @@
  *   ۵. بررسی، امتیازدهی، راهنما، سابقه، کارنامه و خروجی CSV
  *   ۶. سازنده‌ی گراف سفارشی
  *   ۷. آزمایشگاه (ایستگاه‌های ۱ تا ۵)
- *   ۹. تمرین مینیمال، رسم بر اساس n و γ، رنگ‌بندی پوشش (نسخه ۶.۳.۰)
+ *   ۹. تمرین مینیمال، رسم بر اساس n و γ، رنگ‌بندی پوشش (نسخه ۶.۴.۰)
  *   ۸. تب‌ها، میان‌برها و راه‌اندازی
  *
  * وابستگی: graphs.js (window.GraphLib)
@@ -40,6 +40,7 @@
     graphId: 'C4',
     graph: null,
     marks: 0,            // ماسک بیتی مهره‌ها
+    timed: null,         // چالش زمان‌دار فعال: { round, score, endsAt, log } یا null (ذخیره نمی‌شود)
     pending: 0,          // ماسک مهره‌هایی که برای حذف انتخاب شده‌اند ولی هنوز اعمال نشده‌اند (ذخیره نمی‌شود)
     tested: [],          // مهره‌هایی که در آزمون حذف برای این مجموعه امتحان شده‌اند
     testedKey: '',       // کلید مجموعه‌ای که آزمون‌های tested مربوط به آن است
@@ -230,6 +231,69 @@
   }
 
   /** لغو همه‌ی حذف‌های انتخاب‌شده (مجموعه تغییری نمی‌کند). */
+  /**
+   * تمرین هدفمند: کوچک‌ترین گرافی (ترجیحاً از همان خانواده) را پیدا می‌کند که یک مجموعه‌ی
+   * احاطه‌گر با رأس زائد دارد. این همان اشتباه دانش‌آموز است، روی گرافی کوچک‌تر.
+   */
+  function findTargetedCase(currentId) {
+    const info = L.listGraphs();
+    const cur = info.find((x) => x.id === currentId);
+    let best = null;
+    info.forEach((item) => {
+      if (item.id === currentId) return;
+      const g = L.getGraph(item.id);
+      if (g.n < 3 || g.n > 6) return;
+      const rank = (item.family === (cur && cur.family) ? 0 : 1) * 10 + g.n;
+      if (best && rank >= best.rank) return;
+      for (let S = 1; S < (1 << g.n); S++) {
+        const a = L.analyzeSet(g, S);
+        if (a.dominating && a.redundant.length > 0) {
+          best = { id: item.id, S, redundant: a.redundant, rank };
+          break;
+        }
+      }
+    });
+    return best;
+  }
+
+  /** نمایش یک پیام راهنما (بدون امتیاز) در کادر نتیجه. */
+  function showNote(title, detail) {
+    const box = $('result');
+    box.className = 'result stage';
+    box.innerHTML = '';
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    const small = document.createElement('small');
+    small.textContent = detail;
+    box.appendChild(strong);
+    box.appendChild(small);
+  }
+
+  /** بعد از نتیجه‌ی «احاطه‌گر ولی غیرمینیمال»، دکمه‌ی تمرین هدفمند نشان داده می‌شود. */
+  function offerTargeted() {
+    const c = findTargetedCase(state.graphId);
+    if (!c) return;
+    const btn = document.createElement('button');
+    btn.id = 'btn-targeted';
+    btn.className = 'btn small';
+    btn.textContent = 'تمرین هدفمند: گراف کوچک‌تر با همین اشتباه';
+    btn.addEventListener('click', () => startTargeted(c));
+    $('result').appendChild(btn);
+  }
+
+  /** بارگذاری گراف تمرین هدفمند با مجموعه‌ی غیرمینیمال؛ دانش‌آموز باید رأس زائد را بردارد. */
+  function startTargeted(c) {
+    switchView('game');
+    loadGraph(c.id);
+    setMarks(c.S, false);
+    const g = state.graph;
+    showNote(
+      'تمرین هدفمند: ' + plainName(g),
+      'این مجموعه احاطه‌گر است، ولی رأس ' + listLabels(g, c.redundant) +
+      ' زائد است. آن را بردارید، سپس مرحله‌ی ۱ و ۲ را بزنید.'
+    );
+  }
+
   function clearRemoval() {
     state.pending = 0;
     renderBoard();
@@ -439,13 +503,18 @@
     $('hint-level').textContent = String(state.hintLevel);
     $('btn-hint').disabled = state.hintLevel >= 3;
     // در حالت تمرین امتیازی ثبت نمی‌شود، پس دکمه فقط گراف بعدی است
-    $('btn-next').textContent = state.practice ? 'گراف بعدی' : (state.checked ? 'ثبت و گراف بعدی' : 'گراف بعدی (بدون امتیاز)');
+    // در حالت امتیازی و پس از بررسی، دکمه می‌گوید که امتیاز ثبت می‌شود
+    $('btn-next').textContent = state.practice || !state.checked ? 'گراف بعدی' : 'ثبت و گراف بعدی';
+    $('btn-next').title = state.practice || !state.checked ? '' : 'امتیاز این دور ثبت می‌شود';
     const pendingCount = L.popcount(state.pending);
     const stage1Ready = pendingCount === 0;
     $('btn-check').disabled = !stage1Ready;
     $('btn-check').title = stage1Ready ? '' : 'ابتدا حذف‌های انتخاب‌شده را اعمال یا لغو کنید';
     const stage2Ready = removalReady() && stage1Ready;
     $('btn-check2').disabled = !stage2Ready;
+    $('btn-timed').textContent = state.timed ? 'پایان چالش' : 'چالش زمان‌دار';
+    $('btn-timed').disabled = state.practice;
+    $('btn-timed').title = state.practice ? 'در حالت فقط تمرین، چالش امتیازی نداریم' : '';
     $('btn-check2').title = stage2Ready ? '' : (pendingCount ? 'ابتدا حذف‌های انتخاب‌شده را اعمال یا لغو کنید' : 'ابتدا مرحله‌ی ۱ را تأیید کنید');
     $('removal-apply').hidden = pendingCount === 0;
     $('removal-clear').hidden = pendingCount === 0;
@@ -539,6 +608,7 @@
         '. یکی از آن‌ها را بردارید و دوباره مرحله‌ی ۱ و ۲ را بزنید.';
     }
     showResult(evaluation.status, detail + (state.practice ? ' (تمرین: امتیازی ثبت نمی‌شود.)' : ''));
+    if (evaluation.status === 'validNonMinimal') offerTargeted();
     updateButtons();
     renderBoard();
     saveState();
@@ -660,6 +730,7 @@
 
   /** پایان دور جاری و شروع دور بعد (گراف جدید یا همان گراف). */
   function nextRound() {
+    if (state.timed) { timedAdvance(); return; }
     state.pending = 0;
     if (state.graph) commitRound();
     // در تمرین مینیمال نوبت عوض نمی‌شود (تمرین تک‌نفره است)
@@ -667,6 +738,82 @@
     loadGraph(randomGraph());
   }
 
+
+  /* ---------- چالش زمان‌دار ----------
+   * ۵ گراف تصادفی در ۳ دقیقه. امتیاز هر گراف = امتیاز همان دور (۰/۵/۱۰/۱۵) + پاداش سرعت
+   * (هر ۱۰ ثانیه‌ی باقی‌مانده یک امتیاز، فقط وقتی دور امتیاز دارد). کارنامه و گروه‌ها تغییر نمی‌کنند. */
+  const TIMED_ROUNDS = 5;
+  const TIMED_SECONDS = 180;
+  let timedTimer = null;
+
+  function startTimed() {
+    if (state.practice) return;
+    state.timed = { round: 0, score: 0, endsAt: Date.now() + TIMED_SECONDS * 1000, log: [] };
+    state.pending = 0;
+    switchView('game');
+    setTimedLock(true);
+    timedTimer = setInterval(timedTick, 250);
+    timedNewGraph();
+  }
+
+  function timedNewGraph() {
+    state.timed.round += 1;
+    loadGraph(randomGraph());
+    timedTick();
+    updateButtons();
+  }
+
+  /** دور جاری را ثبت می‌کند و گراف بعدی یا پایان چالش را انجام می‌دهد. */
+  function timedAdvance() {
+    const t = state.timed;
+    if (!t) return;
+    const left = Math.max(0, t.endsAt - Date.now());
+    const base = state.graph && state.stage1 === state.marks ? roundPoints() : 0;
+    const bonus = base > 0 ? Math.floor(left / 10000) : 0;
+    t.score += base + bonus;
+    t.log.push({ graph: plainName(state.graph), points: base, bonus });
+    if (t.round >= TIMED_ROUNDS || left <= 0) finishTimed(false);
+    else timedNewGraph();
+  }
+
+  function timedTick() {
+    const t = state.timed;
+    const box = $('timed-box');
+    if (!t) { box.hidden = true; return; }
+    const left = Math.max(0, t.endsAt - Date.now());
+    // وقتی زمان تمام شد، دور جاری هم با وضعیت فعلی ثبت و چالش پایان می‌یابد
+    if (left <= 0 && t.round > 0) { timedAdvance(); return; }
+    const sec = Math.ceil(left / 1000);
+    const mm = Math.floor(sec / 60), ss = sec % 60;
+    box.hidden = false;
+    box.textContent = 'چالش زمان‌دار: گراف ' + toFa(t.round) + ' از ' + toFa(TIMED_ROUNDS) +
+      '، زمان باقی‌مانده ' + toFa(mm) + ':' + toFa(String(ss).padStart(2, '0')) +
+      '، امتیاز ' + toFa(t.score);
+  }
+
+  /** پایان چالش: aborted = true یعنی کاربر زودتر تمام کرده است. */
+  function finishTimed(aborted) {
+    const t = state.timed;
+    if (!t) return;
+    clearInterval(timedTimer);
+    timedTimer = null;
+    state.timed = null;
+    setTimedLock(false);
+    const box = $('timed-box');
+    box.hidden = false;
+    box.textContent = (aborted ? 'چالش متوقف شد.' : 'چالش تمام شد.') + ' امتیاز کل: ' + toFa(t.score) +
+      ' از ' + toFa(TIMED_ROUNDS * 25) + ' (' + toFa(t.log.length) + ' گراف بررسی شد).';
+    showNote('نتیجه‌ی چالش زمان‌دار', 'امتیاز کل ' + toFa(t.score) + '. این امتیاز در کارنامه ثبت نمی‌شود.');
+    updateButtons();
+  }
+
+  /** در حین چالش، تغییر گراف و تنظیمات قفل می‌شود تا شمارش دورها درست بماند. */
+  function setTimedLock(on) {
+    ['graph-select', 'btn-random', 'btn-restart', 'btn-generate', 'practice-mode', 'team-mode'].forEach((id) => {
+      const el = $(id);
+      if (el) el.disabled = on;
+    });
+  }
 
   function randomGraph() {
     const all = L.listGraphs().map((x) => x.id);
@@ -770,6 +917,75 @@
         '، ' + toFa(h.points) + ' امتیاز' + (h.hints ? '، راهنما: ' + toFa(h.hints) : '');
       hist.appendChild(li);
     });
+  }
+
+  /* ---------- گزارش چاپی برای معلم ----------
+   * همان داده‌ی صفحه‌ی کارنامه، در قالب ساده برای چاپ یا ذخیره به‌صورت PDF. */
+  const STATUS_FA = {
+    exact: 'مینیمم', minimal: 'مینیمال، غیرمینیمم', validNonMinimal: 'احاطه‌گر، غیرمینیمال',
+    stage1only: 'فقط مرحله‌ی ۱', notDominating: 'نامعتبر', skipped: 'رد شد', practice: 'تمرین',
+  };
+
+  function addReportTable(root, title, heads, rows) {
+    const h = document.createElement('h2');
+    h.textContent = title;
+    root.appendChild(h);
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const hr = document.createElement('tr');
+    heads.forEach((x) => { const th = document.createElement('th'); th.textContent = x; hr.appendChild(th); });
+    thead.appendChild(hr);
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    if (!rows.length) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = heads.length;
+      td.textContent = 'هنوز داده‌ای ثبت نشده است.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+    rows.forEach((row) => {
+      const tr = document.createElement('tr');
+      row.forEach((cell) => { const td = document.createElement('td'); td.textContent = cell; tr.appendChild(td); });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    root.appendChild(table);
+  }
+
+  function buildPrintReport() {
+    const root = $('print-report');
+    root.innerHTML = '';
+    const h1 = document.createElement('h1');
+    h1.textContent = 'گزارش بازی «چالش γ»';
+    root.appendChild(h1);
+    const meta = document.createElement('p');
+    meta.textContent = 'تاریخ گزارش: ' + new Date().toLocaleDateString('fa-IR');
+    root.appendChild(meta);
+
+    addReportTable(root, 'گروه‌ها و امتیاز کل', ['گروه', 'امتیاز', 'تعداد دور'],
+      state.teams.map((t) => [t.name, toFa(t.score), toFa(t.rounds)]));
+
+    const card = activeCard();
+    const recs = Object.values(card.records).sort((a, b) => a.name.localeCompare(b.name, 'fa'));
+    addReportTable(root, 'کارنامه: ' + card.name, ['گراف', 'تعداد تلاش', 'بهترین امتیاز'],
+      recs.map((r) => [r.name, toFa(r.attempts), r.best === null ? '—' : toFa(r.best)]));
+
+    addReportTable(root, 'سابقه‌ی ۲۰ دور اخیر', ['گروه', 'گراف', 'وضعیت', 'امتیاز'],
+      state.history.slice(-20).reverse().map((x) => [x.team, x.graph, STATUS_FA[x.status] || x.status, toFa(x.points)]));
+  }
+
+  /** گزارش را می‌سازد و پنجره‌ی چاپ را باز می‌کند؛ فقط بخش گزارش چاپ می‌شود. */
+  function printReport() {
+    buildPrintReport();
+    document.body.classList.add('printing-report');
+    const done = () => {
+      document.body.classList.remove('printing-report');
+      window.removeEventListener('afterprint', done);
+    };
+    window.addEventListener('afterprint', done);
+    window.print();
   }
 
   function activeCard() {
@@ -993,6 +1209,7 @@
 
   /** حالت بازی: امتیازی (on = false) یا فقط تمرین (on = true). در تمرین، بخش‌های امتیازی محو می‌شوند. */
   function setPractice(on) {
+    if (on && state.timed) finishTimed(true);
     state.practice = on;
     $('practice-mode').checked = on;
     document.body.classList.toggle('mode-practice', on);
@@ -1088,7 +1305,7 @@
           const [a, b] = i < j ? [i, j] : [j, i];
           cb.checked = draftEdges.some(([x, y]) => x === a && y === b);
           cb.setAttribute('aria-label', 'یال ' + toFa(a + 1) + ' و ' + toFa(b + 1));
-          cb.addEventListener('change', () => toggleDraftEdge(a, b, cb.checked));
+          cb.addEventListener('change', () => { toggleDraftEdge(a, b, cb.checked); drawPad(); });
           td.appendChild(cb);
         }
         tr.appendChild(td);
@@ -1103,6 +1320,123 @@
     draftEdges = draftEdges.filter(([x, y]) => !(x === a && y === b));
     if (on) draftEdges.push([a, b]);
     $('custom-msg').textContent = 'تعداد یال‌های انتخابی: ' + toFa(draftEdges.length) + '. پس از انتخاب، دکمه‌ی «بازی با این گراف» را بزنید.';
+  }
+
+  /* ---------- ویرایشگر کشیدنی گراف سفارشی ----------
+   * مختصات رأس‌ها در فضای ۰..۳۰۰ ذخیره می‌شود (فقط نمایش). یال‌ها همان draftEdges هستند،
+   * پس جدول و صفحه همیشه یکی‌اند. */
+  const PAD_SIZE = 300;
+  const PAD_R = 15;
+  let padPos = [];
+  let padEdgeMode = false;
+  let padPick = null;
+  let padDrag = null;
+
+  function padRing(n) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + (2 * Math.PI * i) / n;
+      pts.push({ x: 150 + 110 * Math.cos(a), y: 150 + 110 * Math.sin(a) });
+    }
+    return pts;
+  }
+
+  /** صفحه‌ی گراف را از روی n و draftEdges دوباره می‌سازد. */
+  function drawPad() {
+    const pad = $('pad');
+    if (!pad) return;
+    const n = Number($('custom-n').value);
+    if (!Number.isInteger(n) || n < 2 || n > 10) { pad.innerHTML = ''; return; }
+    if (padPos.length !== n) padPos = padRing(n);
+    if (padPick !== null && padPick >= n) padPick = null;
+    pad.innerHTML = '';
+    const svg = svgEl('svg', { viewBox: '0 0 ' + PAD_SIZE + ' ' + PAD_SIZE, class: 'pad-svg', role: 'group', 'aria-label': 'صفحه‌ی ساخت گراف' });
+    draftEdges.forEach(([a, b]) => {
+      if (a >= n || b >= n) return;
+      svg.appendChild(svgEl('line', { class: 'pad-edge', 'data-a': a, 'data-b': b,
+        x1: padPos[a].x, y1: padPos[a].y, x2: padPos[b].x, y2: padPos[b].y }));
+    });
+    for (let v = 0; v < n; v++) {
+      const g = svgEl('g', { class: 'pad-v' + (padPick === v ? ' pick' : ''), tabindex: 0, role: 'button', 'data-pv': v,
+        'aria-label': 'رأس ' + toFa(v + 1) + (padPick === v ? '، انتخاب‌شده برای یال' : '') });
+      g.appendChild(svgEl('circle', { cx: padPos[v].x, cy: padPos[v].y, r: PAD_R }));
+      const label = svgEl('text', { class: 'pad-label', x: padPos[v].x, y: padPos[v].y });
+      label.textContent = toFa(v + 1);
+      g.appendChild(label);
+      g.addEventListener('pointerdown', (e) => onPadDown(e, v));
+      g.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); padTap(v); }
+      });
+      svg.appendChild(g);
+    }
+    svg.addEventListener('pointermove', onPadMove);
+    svg.addEventListener('pointerup', onPadUp);
+    svg.addEventListener('pointercancel', onPadUp);
+    pad.appendChild(svg);
+  }
+
+  /** فقط موقعیت‌ها را به‌روز می‌کند تا هنگام کشیدن عنصر SVG عوض نشود (فوکوس و capture حفظ شود). */
+  function updatePadGeometry(svg) {
+    svg.querySelectorAll('.pad-v').forEach((g) => {
+      const v = Number(g.getAttribute('data-pv'));
+      g.querySelector('circle').setAttribute('cx', padPos[v].x);
+      g.querySelector('circle').setAttribute('cy', padPos[v].y);
+      const label = g.querySelector('text');
+      label.setAttribute('x', padPos[v].x);
+      label.setAttribute('y', padPos[v].y);
+    });
+    svg.querySelectorAll('.pad-edge').forEach((l) => {
+      const a = Number(l.getAttribute('data-a')), b = Number(l.getAttribute('data-b'));
+      l.setAttribute('x1', padPos[a].x); l.setAttribute('y1', padPos[a].y);
+      l.setAttribute('x2', padPos[b].x); l.setAttribute('y2', padPos[b].y);
+    });
+  }
+
+  function svgPoint(svg, e) {
+    const r = svg.getBoundingClientRect();
+    return {
+      x: ((e.clientX - r.left) / r.width) * PAD_SIZE,
+      y: ((e.clientY - r.top) / r.height) * PAD_SIZE,
+    };
+  }
+
+  function onPadDown(e, v) {
+    if (padEdgeMode) { e.preventDefault(); padTap(v); return; }
+    const svg = e.currentTarget.ownerSVGElement;
+    padDrag = { v: v };
+    svg.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+
+  function onPadMove(e) {
+    if (!padDrag) return;
+    const pt = svgPoint(e.currentTarget, e);
+    const m = PAD_R + 2;
+    padPos[padDrag.v] = {
+      x: Math.min(PAD_SIZE - m, Math.max(m, pt.x)),
+      y: Math.min(PAD_SIZE - m, Math.max(m, pt.y)),
+    };
+    updatePadGeometry(e.currentTarget);
+  }
+
+  function onPadUp() {
+    padDrag = null;
+  }
+
+  /** انتخاب دو رأس برای ساخت یا حذف یال (همان تغییری که در جدول انجام می‌شود). */
+  function padTap(v) {
+    if (padPick === null) {
+      padPick = v;
+    } else if (padPick === v) {
+      padPick = null;
+    } else {
+      const a = Math.min(padPick, v), b = Math.max(padPick, v);
+      const exists = draftEdges.some(([x, y]) => x === a && y === b);
+      toggleDraftEdge(a, b, !exists);
+      padPick = null;
+      drawMatrix();
+    }
+    drawPad();
   }
 
   function applyCustom() {
@@ -1327,6 +1661,7 @@
     $('btn-redo').addEventListener('click', redo);
     $('btn-hint').addEventListener('click', useHint);
     $('btn-next').addEventListener('click', nextRound);
+    $('btn-timed').addEventListener('click', () => (state.timed ? finishTimed(true) : startTimed()));
     $('btn-random').addEventListener('click', () => loadGraph(randomGraph()));
     $('btn-card-add').addEventListener('click', addCard);
     $('btn-card-reset').addEventListener('click', resetCard);
@@ -1338,6 +1673,7 @@
     $('btn-restart').addEventListener('click', restartGame);
     $('btn-gamma').addEventListener('click', showGamma);
     $('btn-csv').addEventListener('click', exportCsv);
+    $('btn-print').addEventListener('click', printReport);
 
     $('team-mode').addEventListener('change', (e) => {
       state.teamMode = e.target.checked;
@@ -1346,7 +1682,14 @@
       saveState();
     });
 
-    $('custom-n').addEventListener('change', drawMatrix);
+    $('custom-n').addEventListener('change', () => { drawMatrix(); drawPad(); });
+    $('pad-mode').addEventListener('click', () => {
+      padEdgeMode = !padEdgeMode;
+      padPick = null;
+      $('pad-mode').textContent = 'حالت یال: ' + (padEdgeMode ? 'روشن' : 'خاموش');
+      $('pad-mode').setAttribute('aria-pressed', padEdgeMode ? 'true' : 'false');
+      drawPad();
+    });
     $('btn-custom-apply').addEventListener('click', applyCustom);
 
     $('st3-graph').addEventListener('change', (e) => buildStation3(e.target.value));
@@ -1387,6 +1730,7 @@
     draftEdges = state.custom.edges.slice();
     $('custom-n').value = String(state.custom.n);
     drawMatrix();
+    drawPad();
 
     bindEvents();
     buildStation1();

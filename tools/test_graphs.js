@@ -25,7 +25,7 @@ eq('edgeless N3 gamma', L.computeGamma(3, []).gamma, 3);
 console.log(fails ? `\n${fails} FAIL` : '\nall unit tests passed');
 process.exitCode = fails ? 1 : 0;
 
-// ---- نسخه ۶.۳.۰: احاطه‌گر مینیمال، تحلیل مجموعه، و ساخت بر اساس n و γ ----
+// ---- نسخه ۶.۴.۰: احاطه‌گر مینیمال، تحلیل مجموعه، و ساخت بر اساس n و γ ----
 {
   let f2 = 0; const ok2 = (name, cond) => { if (!cond) f2++; console.log(cond ? 'OK  ' : 'FAIL', name); };
   const P6 = L.getGraph('P6');
@@ -72,6 +72,6 @@ process.exitCode = fails ? 1 : 0;
     }
   }
   ok2('هر احاطه‌گر شامل یک احاطه‌گر مینیمال است', sub);
-  console.log(f2 ? `\n${f2} FAIL (نسخه ۶.۳.۰)` : 'نسخه ۶.۳.۰: همه‌ی تست‌های منطق گراف موفق');
+  console.log(f2 ? `\n${f2} FAIL (نسخه ۶.۴.۰)` : 'نسخه ۶.۴.۰: همه‌ی تست‌های منطق گراف موفق');
   if (f2) process.exitCode = 1;
 }

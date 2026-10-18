@@ -1,4 +1,4 @@
-"""تست صفحه‌ی معرفی (code/intro/): خطا، محتوا، گراف‌ها، حرکت پین، پیوند از بازی.
+"""تست صفحه‌ی معرفی (code/intro/): خطا، محتوا، گراف‌ها، حرکت پین، کارت‌های محو متقاطع، نوار پیشرفت، پیوند از بازی.
 
 اجرا: python3 tools/ui_intro.py
 """
@@ -61,13 +61,63 @@ with sync_playwright() as p:
     check("بخش P₆ شش پانل دارد", pg.locator(mact + " .panel").count() == 6)
     def _goto(f):
         pg.evaluate("([sel, f]) => { const el = document.querySelector(sel); const top = el.getBoundingClientRect().top + scrollY; window.scrollTo({ top: top + f * (el.offsetHeight - innerHeight), behavior: 'instant' }); }", [mact, f])
-        pg.wait_for_timeout(500)
-    def _visible(idx):
-        return pg.evaluate("([sel, i]) => { const r = document.querySelectorAll(sel + ' .panel')[i].getBoundingClientRect(); return r.left < innerWidth && r.right > 0; }", [mact, idx])
+        pg.wait_for_timeout(450)
+    def _op(idx):
+        return pg.evaluate("([sel, i]) => parseFloat(document.querySelectorAll(sel + ' .card')[i].style.opacity)", [mact, idx])
+    check("بخش P₆ شش کارت دارد", pg.locator(mact + " .card").count() == 6)
     _goto(0)
-    check("پانل اول P₆ در ابتدای بخش دیده می‌شود", _visible(0))
+    check("کارت اول P₆ در ابتدا کاملاً دیده می‌شود", _op(0) > 0.99, _op(0))
+    check("شمارنده‌ی کارت‌ها: ۱ از ۶", "۱ از ۶" in pg.inner_text(mact + " [data-cards-count]"), pg.inner_text(mact + " [data-cards-count]"))
     _goto(1)
-    check("در پایان بخش، پانل اثبات P₆ دیده می‌شود", _visible(5), pg.evaluate("(sel)=>[...document.querySelectorAll(sel+' .panel')].map(x=>Math.round(x.getBoundingClientRect().left))", mact))
+    check("در پایان بخش، کارت اثبات P₆ کاملاً دیده می‌شود", _op(5) > 0.99, _op(5))
+    check("در پایان بخش، کارت اول محو شده است", _op(0) < 0.01, _op(0))
+    check("شمارنده‌ی پایان: ۶ از ۶", "۶ از ۶" in pg.inner_text(mact + " [data-cards-count]"))
+    _goto(2.5 / 5)
+    o2, o3 = _op(2), _op(3)
+    check("وسط دو کارت: هر دو نیمه‌شفاف‌اند", 0.3 < o2 < 0.7 and 0.3 < o3 < 0.7, (o2, o3))
+    check("وسط دو کارت: مجموع opacity برابر ۱ است", abs(o2 + o3 - 1) < 0.02, o2 + o3)
+    check("در وسط دو کارت، کارت فعال ۳ از ۶ است", "۳ از ۶" in pg.inner_text(mact + " [data-cards-count]") or "۴ از ۶" in pg.inner_text(mact + " [data-cards-count]"))
+    check("صفحه هیچ‌جا بیش از عرض دید اسکرول افقی ندارد", pg.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), pg.evaluate("[document.documentElement.scrollWidth, innerWidth]"))
+    check("بخش‌های پن دیگر ریل افقی ندارند", pg.locator(".rail:not(#rail), [data-sc-pan], .act--pan, .act--stack").count() == 0)
+    # نوار پیشرفت: با اسکرول پر می‌شود
+    bar = "document.querySelector('.rail__fill')"
+    scale = "parseFloat(({}.style.transform.match(/scaleY\\(([-0-9.]+)\\)/) || [0, 0])[1])".format(bar)
+    pg.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+    pg.wait_for_timeout(120)
+    s1 = pg.evaluate(scale)
+    # ریل پیشرفت: عمودی، لبه‌ی راست، دور از گوشه، و هم‌اندازه با بخش‌ها
+    rb = pg.evaluate("(() => { const r = document.getElementById('rail').getBoundingClientRect(); return {x: r.left, w: r.width, h: r.height, top: r.top, right: innerWidth - r.right, vw: innerWidth, vh: innerHeight}; })()")
+    check("ریل پیشرفت عمودی است (ارتفاع بیشتر از عرض)", rb["h"] > rb["w"] * 4, rb)
+    check("ریل پیشرفت در لبه‌ی راست صفحه است", rb["x"] > rb["vw"] * 0.85, rb)
+    check("ریل پیشرفت به گوشه نچسبیده (فاصله‌ی بالا و پایین)", rb["top"] > 80 and rb["top"] + rb["h"] < rb["vh"] - 40, rb)
+    check("تعداد نقاط ریل برابر تعداد بخش‌هاست", pg.evaluate("document.querySelectorAll('.rail__tick').length") == pg.evaluate("document.querySelectorAll('section[data-rail]').length") == 6)
+    # نقاط ریل باید با طول واقعی بخش‌ها هم‌خوان باشند (نه فاصله‌ی برابر)
+    ratios = pg.evaluate("""(() => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const track = document.querySelector('.rail__track').getBoundingClientRect();
+      return [...document.querySelectorAll('.rail__list li')].map((li, i) => {
+        const sec = document.querySelectorAll('section[data-rail]')[i];
+        const want = (sec.getBoundingClientRect().top + scrollY) / max;
+        const btn = li.querySelector('.rail__dot').getBoundingClientRect();
+        const got = (btn.top + btn.height / 2 - track.top) / track.height;
+        return {want: want, got: got};
+      });
+    })()""")
+    worst = max(abs(r["want"] - r["got"]) for r in ratios)
+    check("نقاط ریل روی شروع واقعی بخش‌ها قرار دارند (خطا کمتر از ۲٪)", worst < 0.02, ratios)
+    gaps = [ratios[i+1]["got"] - ratios[i]["got"] for i in range(len(ratios)-1)]
+    check("فاصله‌ی نقاط با طول بخش‌ها تناسب دارد (نه یکسان)", max(gaps) - min(gaps) > 0.05, gaps)
+    check("هر بخش برچسب دارد", pg.evaluate("[...document.querySelectorAll('.rail__label')].every(l => l.textContent.trim().length > 0)"))
+    pg.evaluate("window.scrollTo(0, 0)"); pg.wait_for_timeout(150)
+    check("بخش فعال در بالای صفحه نقطه‌ی اول است", pg.evaluate("document.querySelector('.rail__tick').classList.contains('is-active')"))
+    pg.click(".rail__list li:nth-child(3) .rail__tick")
+    pg.wait_for_timeout(1200)
+    check("کلیک روی نقطه‌ی سوم، به بخش سوم می‌برد", pg.evaluate("document.querySelectorAll('.rail__tick')[2].classList.contains('is-active')"), pg.evaluate("[...document.querySelectorAll('.rail__tick')].map(t=>t.className)"))
+    check("نوار پیشرفت در پایین صفحه کامل است", abs(s1 - 1) < 0.001, s1)
+    pg.evaluate("window.scrollTo(0, 0)")
+    pg.wait_for_timeout(120)
+    s2 = pg.evaluate(scale)
+    check("نوار پیشرفت در بالای صفحه صفر است", abs(s2) < 0.001, s2)
 
     # ۴. پوشش: مرحله‌ی تعریف به پوشش کامل می‌رسد و شمارنده‌ی ۶ از ۶ را نشان می‌دهد
     reached = False

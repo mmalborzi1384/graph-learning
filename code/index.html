@@ -63,6 +63,7 @@
         <div class="btn-row">
           <button id="btn-next" class="btn primary">ثبت و گراف بعدی</button>
           <button id="btn-random" class="btn">گراف تصادفی</button>
+          <button id="btn-timed" class="btn">چالش زمان‌دار</button>
         </div>
 
         <h2>حالت بازی</h2>
@@ -78,6 +79,7 @@
             <span class="trigger__thumb"></span>
           </span>
         </label>
+        <div id="timed-box" class="timed-box" role="status" hidden></div>
         <div id="practice-box" class="practice-box" hidden></div>
         <p class="hint scoring">در حالت دو گروهی، نوبت بین «گروه <span class="math" dir="ltr">A</span>» و «گروه <span class="math" dir="ltr">B</span>» به‌صورت متناوب عوض می‌شود.</p>
 
@@ -114,6 +116,11 @@
           <summary>ساخت گراف سفارشی</summary>
           <label for="custom-n">تعداد رأس (۲ تا ۱۰)</label>
           <input type="number" id="custom-n" min="2" max="10" value="4">
+          <p class="hint">رأس‌ها را بکشید تا جابه‌جا شوند. برای ساخت یال، «حالت یال» را روشن کنید و دو رأس را پشت‌سرهم بزنید. جدول زیر همان یال‌ها را نشان می‌دهد.</p>
+          <div class="btn-row">
+            <button id="pad-mode" class="btn small" aria-pressed="false">حالت یال: خاموش</button>
+          </div>
+          <div id="pad" class="pad"></div>
           <div class="table-wrap"><table class="data-table matrix-table" id="custom-matrix"></table></div>
           <div class="btn-row">
             <button id="btn-custom-apply" class="btn primary">بازی با این گراف</button>
@@ -187,6 +194,7 @@
         <ol id="history" class="history"></ol>
         <div class="btn-row">
           <button id="btn-csv" class="btn">خروجی CSV سابقه</button>
+          <button id="btn-print" class="btn">چاپ گزارش معلم</button>
         </div>
 
         <h2>کارنامه‌ی گراف‌ها</h2>
@@ -329,7 +337,7 @@
 </main>
 
 <footer class="footer">
-  منبع: ریاضیات گسسته، پایه‌ی دوازدهم، رشته‌ی ریاضی-فیزیک. فصل دوم، درس دوم. نسخه‌ی ۶.۳.۰
+  منبع: ریاضیات گسسته، پایه‌ی دوازدهم، رشته‌ی ریاضی-فیزیک. فصل دوم، درس دوم. نسخه‌ی ۶.۴.۰
 </footer>
 
 <script src="js/scenes.js" defer></script>
@@ -349,5 +357,6 @@
 </script>
 <script src="graphs.js"></script>
 <script src="script.js"></script>
+  <section id="print-report" class="print-report" aria-label="گزارش چاپی"></section>
 </body>
 </html>

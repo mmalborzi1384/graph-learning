@@ -1,5 +1,5 @@
 import re
-"""تست نسخه‌ی ۶.۳.۰: رنگ‌بندی پوشش، همه‌ی مینیمم‌ها، رسم بر اساس n و γ، تمرین مینیمال،
+"""تست نسخه‌ی ۶.۴.۰: رنگ‌بندی پوشش، همه‌ی مینیمم‌ها، رسم بر اساس n و γ، تمرین مینیمال،
 ایستگاه ۴ (مینیمال در برابر مینیمم)، و متن راهنما. اجرا: python3 tools/ui_v600.py"""
 import sys
 from playwright.sync_api import sync_playwright
@@ -151,9 +151,9 @@ with sync_playwright() as p:
     # ۶. راهنما و نسخه
     pg.click("#tab-help")
     check("تعاریف: بخش مینیمال و مینیمم وجود دارد", "احاطه‌گر مینیمال و مینیمم" in pg.inner_text("#view-help"))
-    check("پاورقی نسخه‌ی ۶.۳.۰ است", "۶.۳.۰" in pg.inner_text("footer"))
+    check("پاورقی نسخه‌ی ۶.۴.۰ است", "۶.۴.۰" in pg.inner_text("footer"))
     check("بدون خطای صفحه/کنسول", not errs, errs)
-    # ۴. گراف پترسن (نسخه ۶.۳.۰): ۱۰ رأس، γ = ۳، ۱۰ مجموعه‌ی مینیمم
+    # ۴. گراف پترسن (نسخه ۶.۴.۰): ۱۰ رأس، γ = ۳، ۱۰ مجموعه‌ی مینیمم
     pg.click("#tab-game")
     pg.select_option("#graph-select", "PT")
     check("پترسن: ۱۰ رأس روی صفحه است", pg.locator(".board .vertex").count() == 10, pg.locator(".board .vertex").count())
@@ -185,5 +185,5 @@ with sync_playwright() as p:
 
     b.close()
 
-print(f"\n{sum(res)}/{len(res)} تست نسخه‌ی ۶.۳.۰ موفق")
+print(f"\n{sum(res)}/{len(res)} تست نسخه‌ی ۶.۴.۰ موفق")
 sys.exit(0 if all(res) else 1)

@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  صفحه‌ی معرفی «چالش γ» (نسخه ۶.۳.۰)
+  صفحه‌ی معرفی «چالش γ» (نسخه ۶.۴.۰)
 
   گرامر: فصل‌بندی ویراستاری. چهار بخش با دستگاه‌های پین، پن و فلو.
   موتور حرکت: vendor/scrollcraft.js (MIT، Nate Herk). این صفحه کد موتور را تغییر نمی‌دهد.
@@ -20,6 +20,11 @@
 <link rel="stylesheet" href="intro.css">
 </head>
 <body>
+<nav class="rail" id="rail" aria-label="پیشرفت معرفی">
+  <div class="rail__track" aria-hidden="true"><span class="rail__fill"></span></div>
+  <span class="rail__knob" aria-hidden="true"></span>
+  <ol class="rail__list"></ol>
+</nav>
 
 <header class="bar">
   <a class="bar__brand" href="../index.html">چالش <span class="gamma"><span class="math" dir="ltr">γ</span></span></a>
@@ -42,7 +47,7 @@
 <main id="top">
 
   <!-- ۱. شناخت: تعریف، با گراف ثابت -->
-  <section class="hero">
+  <section class="hero" data-rail="آغاز">
     <div class="hero__grid">
       <div class="hero__text">
         <h1 class="display">مجموعه‌ی احاطه‌گر و عدد احاطه‌گری</h1>
@@ -65,7 +70,7 @@
 
   <!-- ۲. نمونه‌ی گام‌به‌گام: پین -->
   <section class="act act--pin" data-sc-act="pin" data-sc-span="3.2" data-intro="definition"
-           aria-label="پوشش گراف C₆ گام‌به‌گام">
+           aria-label="پوشش گراف C₆ گام‌به‌گام" data-rail="تعریف">
     <div class="stage" data-sc-stage>
       <figure class="figure figure--live" data-graph="C6">
         <figcaption>
@@ -90,10 +95,10 @@
   </section>
 
   <!-- ۳. کمینه بودن: پن با سه وضعیت -->
-  <section class="act act--pan" data-sc-act="pan" data-sc-span="3.2" aria-label="کمینه بودن در مسیر P₇">
+  <section class="act act--cards" data-sc-act="pin" data-sc-span="3" data-cards aria-label="کمینه بودن در مسیر P₇" data-rail="کمینه در P₇">
     <div class="stage" data-sc-stage>
-      <div class="rail" data-sc-pan="0.5">
-        <article class="panel">
+      <div class="cards">
+        <article class="panel card">
           <figure class="figure" data-graph="P7" data-marked="1,5" data-missing="1">
             <figcaption>مسیر <span class="math" dir="ltr">P₇</span> با <span class="math" dir="ltr">D = {۲، ۶}</span></figcaption>
           </figure>
@@ -101,7 +106,7 @@
             رأس‌های پوشش‌داده‌شده: ۶ از ۷. رأس ۴ پوشش داده نشده است، پس <span class="math" dir="ltr">D</span> احاطه‌گر نیست.
           </p>
         </article>
-        <article class="panel">
+        <article class="panel card">
           <figure class="figure" data-graph="P7" data-marked="1,4,5">
             <figcaption>مسیر <span class="math" dir="ltr">P₇</span> با <span class="math" dir="ltr">D = {۲، ۵، ۶}</span></figcaption>
           </figure>
@@ -109,7 +114,7 @@
             همه‌ی رأس‌ها پوشش داده شده‌اند، پس <span class="math" dir="ltr">D</span> احاطه‌گر است و <span class="math" dir="ltr">γ(P₇)</span> <span class="math"><span class="math" dir="ltr">≤</span></span> ۳.
           </p>
         </article>
-        <article class="panel panel--proof">
+        <article class="panel panel--proof card">
           <h2 class="panel__title">کران پایین</h2>
           <p class="panel__text">
             در مسیر <span class="math" dir="ltr">P₇</span> و دور <span class="math" dir="ltr">C₆</span>، بسته‌ی همسایگی هر رأس حداکثر سه رأس دارد.
@@ -123,15 +128,16 @@
             برای <span class="math" dir="ltr">C₆: ۶</span> <span class="math"><span class="math" dir="ltr">≤</span></span> <span class="math" dir="ltr">۳|D|</span>، پس <span class="math" dir="ltr">|D|</span> <span class="math"><span class="math" dir="ltr">≥</span></span> ۲ و <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(C₆) = ۲</span>.
           </p>
         </article>
-      </div>
+            </div>
+      <p class="cards__count" data-cards-count aria-live="off"></p>
     </div>
   </section>
 
   <!-- ۳ب. مینیمال در برابر مینیمم: پن با شش پانل -->
-  <section class="act act--pan" data-sc-act="pan" data-sc-span="5" aria-label="مینیمال در برابر مینیمم در مسیر P₆">
+  <section class="act act--cards" data-sc-act="pin" data-sc-span="6" data-cards aria-label="مینیمال در برابر مینیمم در مسیر P₆" data-rail="مینیمال در P₆">
     <div class="stage" data-sc-stage>
-      <div class="rail" data-sc-pan="0">
-        <article class="panel">
+      <div class="cards">
+        <article class="panel card">
           <figure class="figure" data-graph="P6" data-marked="1,3,5">
             <figcaption>مسیر <span class="math" dir="ltr">P₆</span> با <span class="math" dir="ltr">D = {۲، ۴، ۶}</span></figcaption>
           </figure>
@@ -140,7 +146,7 @@
             احاطه‌گری حفظ می‌شود.
           </p>
         </article>
-        <article class="panel">
+        <article class="panel card">
           <figure class="figure" data-graph="P6" data-marked="3,5" data-missing="1">
             <figcaption>حذف <span class="math" dir="ltr">۲: D ∖ {۲} = {۴، ۶}</span></figcaption>
           </figure>
@@ -148,7 +154,7 @@
             <span class="math" dir="ltr">N[۱] = {۱، ۲}</span> و ۲ دیگر در مجموعه نیست. پس رأس ۱ پوشش داده نمی‌شود.
           </p>
         </article>
-        <article class="panel">
+        <article class="panel card">
           <figure class="figure" data-graph="P6" data-marked="1,5" data-missing="3">
             <figcaption>حذف <span class="math" dir="ltr">۴: D ∖ {۴} = {۲، ۶}</span></figcaption>
           </figure>
@@ -156,7 +162,7 @@
             <span class="math" dir="ltr">N[۴] = {۳، ۴، ۵}</span> و هیچ‌کدام از این سه رأس در <span class="math" dir="ltr">D ∖ {۴}</span> نیستند. پس رأس ۴ پوشش داده نمی‌شود.
           </p>
         </article>
-        <article class="panel">
+        <article class="panel card">
           <figure class="figure" data-graph="P6" data-marked="1,3" data-missing="5">
             <figcaption>حذف <span class="math" dir="ltr">۶: D ∖ {۶} = {۲، ۴}</span></figcaption>
           </figure>
@@ -164,7 +170,7 @@
             <span class="math" dir="ltr">N[۶] = {۵، ۶}</span> و هیچ‌کدام در <span class="math" dir="ltr">D ∖ {۶}</span> نیستند. پس رأس ۶ پوشش داده نمی‌شود. بنابراین <span class="math" dir="ltr">D</span> مینیمال است.
           </p>
         </article>
-        <article class="panel">
+        <article class="panel card">
           <figure class="figure" data-graph="P6" data-marked="1,4">
             <figcaption>مجموعه‌ی <span class="math" dir="ltr">D' = {۲، ۵}</span></figcaption>
           </figure>
@@ -172,7 +178,7 @@
             <span class="math" dir="ltr">D'</span> احاطه‌گر است و تنها دو عضو دارد. از <span class="math" dir="ltr">۶ ≤ ۳|D|</span> نتیجه می‌شود <span class="math" dir="ltr">|D| ≥ ۲</span>، پس <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P₆) = ۲</span>.
           </p>
         </article>
-        <article class="panel panel--proof">
+        <article class="panel panel--proof card">
           <h2 class="panel__title">مینیمال، نه لزوماً مینیمم</h2>
           <p class="panel__text">
             هر احاطه‌گر مینیمم مینیمال است. اگر حذف عضوی احاطه‌گری را خراب نکند، زیرمجموعه‌ای احاطه‌گر
@@ -182,12 +188,13 @@
             عکس این حکم درست نیست. <span class="math" dir="ltr">D = {۲، ۴، ۶}</span> مینیمال است، اما <span class="math" dir="ltr">|D| = ۳</span> و <span class="gamma"><span class="math" dir="ltr">γ</span></span><span class="math" dir="ltr">(P₆) = ۲</span>.
           </p>
         </article>
-      </div>
+            </div>
+      <p class="cards__count" data-cards-count aria-live="off"></p>
     </div>
   </section>
 
   <!-- ۴. قضیه و مثال‌ها: فلو -->
-  <section class="flow" data-sc-act="flow">
+  <section class="flow" data-sc-act="flow" data-rail="قضیه">
     <div class="flow__wrap">
       <h2 class="display display--lg" data-sc-in>قضیه‌ی مسیر و دور</h2>
       <p class="lede" data-sc-in>
@@ -221,7 +228,7 @@
   </section>
 
   <!-- ۵. اقدام: پین، آخرین عنصر صفحه -->
-  <section class="act act--pin act--close" data-sc-act="pin" data-sc-span="1.4" aria-label="شروع بازی">
+  <section class="act act--pin act--close" data-sc-act="pin" data-sc-span="1.4" aria-label="شروع بازی" data-rail="شروع بازی">
     <div class="stage close" data-sc-stage>
       <div class="close__inner">
         <h2 class="display display--lg">حالا خودتان امتحان کنید.</h2>
